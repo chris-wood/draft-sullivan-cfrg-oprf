@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-05-09T00:34:34.189735+00:00",
+  "timestamp": "2021-05-20T00:38:14.760384+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -17420,6 +17420,32 @@
           ]
         }
       ]
+    },
+    {
+      "number": 248,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjQ3MTk4NTc2",
+      "title": "Bumps up dependency to the latest hash to curve repo.",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/248",
+      "state": "OPEN",
+      "author": "armfazh",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "No changes in code or test vectors.",
+      "createdAt": "2021-05-19T01:21:05Z",
+      "updatedAt": "2021-05-19T01:21:27Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "098e1cbd21714805c724d9cfbd816d3a8a5cd1f4",
+      "headRepository": "armfazh/draft-irtf-cfrg-voprf",
+      "headRefName": "bump_dep_H2c",
+      "headRefOid": "7513d754f7fe1ccdd6dc7f0ca2e348d0bafa4ecd",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
