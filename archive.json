@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-05-20T00:38:14.760384+00:00",
+  "timestamp": "2021-05-23T00:47:56.875232+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -3659,11 +3659,13 @@
       "state": "OPEN",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
-      "assignees": [],
+      "assignees": [
+        "chris-wood"
+      ],
       "labels": [],
       "body": "We currently say that implementations should reduce mod `p`, but `p` is elsewhere the order of the group (and not the underlying field). We should probably fix the language here.",
       "createdAt": "2021-03-17T15:03:17Z",
-      "updatedAt": "2021-03-17T15:03:17Z",
+      "updatedAt": "2021-05-20T17:50:06Z",
       "closedAt": null,
       "comments": []
     },
@@ -3672,16 +3674,33 @@
       "id": "MDU6SXNzdWU4NDg4OTQ2NTQ=",
       "title": "HashTo* dst too short",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/244",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "bytemare",
       "authorAssociation": "CONTRIBUTOR",
-      "assignees": [],
+      "assignees": [
+        "armfazh"
+      ],
       "labels": [],
       "body": "The new dst ( \"HashToScalar-\" + context )  for _HashTo-something_ operations is less than the 16 bytes recommended by h2c. A couple of more characters should fix this.\r\n\r\ncc @chris-wood ",
       "createdAt": "2021-04-02T01:30:56Z",
-      "updatedAt": "2021-04-02T01:31:39Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2021-05-21T15:03:09Z",
+      "closedAt": "2021-05-21T15:03:09Z",
+      "comments": [
+        {
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I think this was already addressed.\r\n\r\nNote that the DST have more than 16 bytes:\r\nDST for HashToGroup(): `DST = \"HashToGroup-\" || contextString`\r\nDST for HashToScalar():  `DST = \"HashToScalar-\" || contextString`\r\nwhere `contextString = \"VOPRF06-\" || I2OSP(modeBase, 1) || I2OSP(suite.ID, 2)`\r\n\r\nUnless I am missing something, we only move `VOPRF06-` to the context string.\r\n",
+          "createdAt": "2021-05-20T23:57:32Z",
+          "updatedAt": "2021-05-20T23:57:32Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Indeed - closing as resolved. @bytemare please reopen if you disagree with this assessment!",
+          "createdAt": "2021-05-21T15:03:09Z",
+          "updatedAt": "2021-05-21T15:03:09Z"
+        }
+      ]
     }
   ],
   "pulls": [
@@ -17426,26 +17445,42 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NjQ3MTk4NTc2",
       "title": "Bumps up dependency to the latest hash to curve repo.",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/248",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "armfazh",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "No changes in code or test vectors.",
       "createdAt": "2021-05-19T01:21:05Z",
-      "updatedAt": "2021-05-19T01:21:27Z",
+      "updatedAt": "2021-05-20T17:46:31Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "098e1cbd21714805c724d9cfbd816d3a8a5cd1f4",
       "headRepository": "armfazh/draft-irtf-cfrg-voprf",
       "headRefName": "bump_dep_H2c",
       "headRefOid": "7513d754f7fe1ccdd6dc7f0ca2e348d0bafa4ecd",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2021-05-20T17:46:31Z",
+      "mergedAt": "2021-05-20T17:46:31Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "8bf50a0507813b92a6886ef26c504fc29402d1de"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NjY0NjkyNDc3",
+          "commit": {
+            "abbreviatedOid": "7513d75"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-05-20T17:46:27Z",
+          "updatedAt": "2021-05-20T17:46:27Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
