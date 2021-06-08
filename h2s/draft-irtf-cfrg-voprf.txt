@@ -1013,12 +1013,12 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
          = "expand_message_xmd", DST = "HashToScalar-" || contextString,
          and output length 64, interpret "uniform_bytes" as a 512-bit
          integer in little-endian order, and reduce the integer modulo
-         2^252 + 27742317777372353535851937790883648493.
+         "Order()".
 
       -  Serialization: Both group elements and scalars are encoded in
          Ne = Ns = 32 bytes.  For group elements, use the 'Encode' and
          'Decode' functions from [RISTRETTO].  For scalars, ensure they
-         are fully reduced modulo p and in little-endian order.
+         are fully reduced modulo "Order()" and in little-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
 
@@ -1037,13 +1037,12 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
          = "expand_message_xof", DST = "HashToScalar-" || contextString,
          and output length 64, interpret "uniform_bytes" as a 512-bit
          integer in little-endian order, and reduce the integer modulo
-         2^446 - 1381806680989511535200738674851542688033669247488217860
-         9894547503885.
+         "Order()".
 
       -  Serialization: Both group elements and scalars are encoded in
          Ne = Ns = 56 bytes.  For group elements, use the 'Encode' and
          'Decode' functions from [RISTRETTO].  For scalars, ensure they
-         are fully reduced modulo p and in little-endian order.
+         are fully reduced modulo "Order()" and in little-endian order.
 
    *  Hash: SHAKE-256, and Nh = 56.
 
@@ -1060,13 +1059,12 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
       -  HashToScalar(): Use hash_to_field from
          [I-D.irtf-cfrg-hash-to-curve] using L = 48,
          "expand_message_xmd" with SHA-256, DST = "HashToScalar-" ||
-         contextString, and prime modulus 115792089210356248762697446949
-         407573529996955224135760342422259061068512044369.
+         contextString, and prime modulus equal to "Order()".
 
       -  Serialization: Elements are serialized as Ne = 33 byte strings
          using compressed point encoding for the curve [SEC1].  Scalars
          are serialized as Ns = 32 byte strings by fully reducing the
-         value modulo p and in big-endian order.
+         value modulo "Order()" and in big-endian order.
 
    *  Hash: SHA-256, and Nh = 32.
 
@@ -1083,14 +1081,12 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
       -  HashToScalar(): Use hash_to_field from
          [I-D.irtf-cfrg-hash-to-curve] using L = 72,
          "expand_message_xmd" with SHA-512, DST = "HashToScalar-" ||
-         contextString, and prime modulus 394020061963944792122790401001
-         436138050797392704654466679469052796276593991132635693989563081
-         52294913554433653942643.
+         contextString, and prime modulus equal to "Order()".
 
       -  Serialization: Elements are serialized as Ne = 49 byte strings
          using compressed point encoding for the curve [SEC1].  Scalars
          are serialized as Ns = 48 byte strings by fully reducing the
-         value modulo p and in big-endian order.
+         value modulo "Order()" and in big-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
 
@@ -1107,15 +1103,12 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
       -  HashToScalar(): Use hash_to_field from
          [I-D.irtf-cfrg-hash-to-curve] using L = 98,
          "expand_message_xmd" with SHA-512, DST = "HashToScalar-" ||
-         contextString, and prime modulus 686479766013060971498190079908
-         139321726943530014330540939446345918554318339765539424505774633
-         321719753296399637136332111386476861244038034037280889270700544
-         9.
+         contextString, and prime modulus equal to "Order()".
 
       -  Serialization: Elements are serialized as Ne = 67 byte strings
          using compressed point encoding for the curve [SEC1].  Scalars
          are serialized as Ns = 66 byte strings by fully reducing the
-         value modulo p and in big-endian order.
+         value modulo "Order()" and in big-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
 
