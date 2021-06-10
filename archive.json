@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-05-23T00:47:56.875232+00:00",
+  "timestamp": "2021-06-10T00:38:22.318920+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -3221,7 +3221,7 @@
       ],
       "body": "From @hugokraw:\r\n\r\n> An attack with Q queries, lowers security by (log Q)/2 bits (not log Q), and it only applies if Q is a divisor of p-1 or p+1. Moreover, the *memory* cost of the attack (not just time) is 2^{p/2-(log(Q)/2}. \r\n\r\nWe might also want to update the \"use a larger curve\" guidance, since whether or not it's needed depends on the feasibility of these attacks. (OPAQUE, for example, is fine to use P-256 and the like.)\r\n\r\nMore information can be found in [Taylor's writeup](https://mumble.net/~campbell/tmp/20210116/draft-riastradh-staticdh.html) on  \"Attacks on Static Diffie-Hellman Oracles\".",
       "createdAt": "2021-01-17T15:49:05Z",
-      "updatedAt": "2021-02-20T14:35:52Z",
+      "updatedAt": "2021-06-08T11:57:23Z",
       "closedAt": null,
       "comments": [
         {
@@ -3265,6 +3265,13 @@
           "body": "@chris-wood, not sure I'd have cycles for this before Monday. There was a recent write-up which is formulated as a draft CFRG document, but I'm not sure if it has yet been submitted: https://riastradh.github.io/draft-riastradh-cfrg-staticdh/draft-riastradh-cfrg-staticdh.html. Ultimately, if we could link this discussion outside of VOPRFs, I think this would be a nicer solution.",
           "createdAt": "2021-02-19T16:38:56Z",
           "updatedAt": "2021-02-19T16:38:56Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@alxdavids any chance you can do this before IETF 111?",
+          "createdAt": "2021-06-08T11:57:23Z",
+          "updatedAt": "2021-06-08T11:57:23Z"
         }
       ]
     },
@@ -3273,7 +3280,7 @@
       "id": "MDU6SXNzdWU4MDIzNjkwNjg=",
       "title": "Consider adding no-DLEQ ciphersuite for VOPRF",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/225",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "alxdavids",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -3282,8 +3289,8 @@
       "labels": [],
       "body": "The PMB Tokens paper constructs a weaker version of a VOPRF without DLEQ proofs (see Section 7 of https://eprint.iacr.org/2020/072). The weakness of the construction allows the server to send back random garbage and the client cannot distinguish.\r\n\r\nThis effectively provides the server with an extra bit of privacy that it can remove. However, removing the DLEQ proofs also comes with the benefit of removing some of the more expensive computation from the server, so I think it should be considered as a separate ciphersuite. Note, this is only valid for the VOPRF in the additive blinding case.\r\n\r\nFirst raised by @siyengar. cc @chris-wood, @armfazh, @claucece for further discussion.  ",
       "createdAt": "2021-02-05T18:07:41Z",
-      "updatedAt": "2021-02-20T19:20:22Z",
-      "closedAt": null,
+      "updatedAt": "2021-06-08T19:36:57Z",
+      "closedAt": "2021-06-08T19:36:57Z",
       "comments": [
         {
           "author": "chris-wood",
@@ -3312,6 +3319,13 @@
           "body": "Okay, I RTFM :-) this seems less like a new ciphersuite and more like a new mode because (a) the group doesn't matter, (b) implementation details differ compared to the other two modes, and (c) the security properties are different. Perhaps we could call this \"WeakVerifiable\" mode, or something? It might look like so:\r\n\r\n1. Blind is as specified in Section 7 of [the PMB paper](https://eprint.iacr.org/2020/072.pdf).\r\n2. Evaluate is as specified in the base mode.\r\n3. Finalize is as specified in Section 7 of the PMB paper.  \r\n\r\n~~I'll take this and put up a PR tomorrow. Maybe we can land this before the draft deadline on Monday.~~\r\n\r\nI'll take this and put up a PR sometime before IETF 110. We can then discuss it during the meeting. ",
           "createdAt": "2021-02-19T22:58:11Z",
           "updatedAt": "2021-02-20T19:20:22Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Given that this particular variant requires some additional analysis, and it can be done in a followup spec should one want it, closing as WONTFIX. @siyengar, we can spin up a separate document should it really be needed.",
+          "createdAt": "2021-06-08T19:36:57Z",
+          "updatedAt": "2021-06-08T19:36:57Z"
         }
       ]
     },
@@ -3581,15 +3595,15 @@
       "id": "MDU6SXNzdWU4MTQyMTYxMjA=",
       "title": "Deriving keys deterministically requires domain separation?",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/236",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "armfazh",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "In this call to HashToScalar, no DST is specified, which is not conformant with Ciphersuite section in the draft.\r\n\r\nhttps://github.com/cfrg/draft-irtf-cfrg-voprf/blob/866a54cc1021390359e67d8a1b773e2d70f19067/poc/oprf.sage#L281-L284\r\n\r\nOTOH, setting `DST = \"VOPRF-HashToScalar\"|| context_string` is a dst specific to the (v)oprf protocol. It seems to me that the derivation of keys must be agnostic of the caller protocol.\r\n",
       "createdAt": "2021-02-23T07:59:16Z",
-      "updatedAt": "2021-04-30T23:47:06Z",
-      "closedAt": null,
+      "updatedAt": "2021-06-08T11:52:40Z",
+      "closedAt": "2021-06-08T11:52:40Z",
       "comments": [
         {
           "author": "tmthrgd",
@@ -3632,6 +3646,13 @@
           "body": "> Note that context_string depends on the mode: mode_base or mode_verifiable, so the keys will be attacthed to the mode, not only to the ciphersuite used. is this intended?\r\n\r\nI think so, yeah. We can always relax this later if folks think it's too strong, but my take is that more context binding is generally better.",
           "createdAt": "2021-04-30T23:47:06Z",
           "updatedAt": "2021-04-30T23:47:06Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Closing as resolved. Please reopen if that's not the case!",
+          "createdAt": "2021-06-08T11:52:40Z",
+          "updatedAt": "2021-06-08T11:52:40Z"
         }
       ]
     },
@@ -16936,21 +16957,21 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTgyNjQ0MDI5",
       "title": "Add draft of WeakVerifiable mode.",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/240",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "First attempt at #225. Opening as a draft while we work through some key questions:\r\n\r\n1. The protocol sketch in the PMBTokens paper suggests that the server produces a DLEQ proof of its public key, and that the client verifies this before running the protocol. However, it's not clear to me what value this check adds. There seem to be two cases: (a) the key is invalid, in which case the client doesn't use it, or (b) the key is valid, in which case the client uses it (but is possible put into two buckets based on the server response). Is it necessary that the server produce a proof *before* the online protocol is run? @dvorak42, do you know? Could you please check with the authors? :-) \r\n2. Given (1), the proposed change right now re-uses the server's base context in the weak verifiable mode. This is because the server produces no DLEQ proof online, for each evaluation. \r\n\r\ncc @siyengar, @ananthr",
       "createdAt": "2021-03-02T02:45:46Z",
-      "updatedAt": "2021-03-03T13:50:44Z",
+      "updatedAt": "2021-06-08T19:35:32Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "e54d4ab9f139ed12b98ad0a7c798e65cdedb07d2",
       "headRepository": "cfrg/draft-irtf-cfrg-voprf",
       "headRefName": "caw/add-weak-verifiable-mode",
       "headRefOid": "c4628e0c079764ccc750d75c81684d22bc91eb09",
-      "closedAt": null,
+      "closedAt": "2021-06-08T19:35:32Z",
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
@@ -17481,6 +17502,72 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 249,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjY1MTY2NzY4",
+      "title": "Adopt SHAKE-256 for decaf448",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/249",
+      "state": "OPEN",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This also fixes some serialization ambiguities.\r\n\r\nCloses #234, #242.\r\n\r\ncc @claucece ",
+      "createdAt": "2021-06-08T18:33:19Z",
+      "updatedAt": "2021-06-08T19:23:08Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "8bf50a0507813b92a6886ef26c504fc29402d1de",
+      "headRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "headRefName": "caw/h2s",
+      "headRefOid": "71fd44be270168fa1c0c74bae384a06c840eb9dd",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njc4OTEyOTAz",
+          "commit": {
+            "abbreviatedOid": "8750e2f"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-06-08T19:16:23Z",
+          "updatedAt": "2021-06-08T19:16:23Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 250,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjY1NDI0MzA4",
+      "title": "Pin blinding mechanism to mode",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/250",
+      "state": "OPEN",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This change does three things:\r\n\r\n1. Mandates additive blinding for verifiable mode.\r\n2. RECOMMENDS multiplicative blinding for base mode.\r\n3. Adds security considerations for applications discussing when it's appropriate to use additive blinding in base mode.\r\n\r\nCloses #241.\r\n\r\ncc @hugokraw for a look at the blind considerations text :-)",
+      "createdAt": "2021-06-08T23:14:29Z",
+      "updatedAt": "2021-06-09T21:26:05Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "8bf50a0507813b92a6886ef26c504fc29402d1de",
+      "headRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "headRefName": "caw/blind-fix",
+      "headRefOid": "72176b9763d81c3df41806e97df472f3ea34def7",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
