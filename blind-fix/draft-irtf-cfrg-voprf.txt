@@ -5,10 +5,10 @@
 Network Working Group                                        A. Davidson
 Internet-Draft                                                          
 Intended status: Informational                          A. Faz-Hernandez
-Expires: 10 December 2021                                    N. Sullivan
+Expires: 17 December 2021                                    N. Sullivan
                                                                C.A. Wood
                                                               Cloudflare
-                                                             8 June 2021
+                                                            15 June 2021
 
 
    Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 10 December 2021.
+   This Internet-Draft will expire on 17 December 2021.
 
 Copyright Notice
 
@@ -1373,8 +1373,8 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
    are true MAY use additive blinding.
 
    The verifiable mode always makes use of the more optimal additive
-   blinding variant, as the public key is available by necessity for
-   verifying the proof.
+   blinding variant, as the public key is always available for verifying
+   the proof.
 
 6.5.  Timing Leaks
 
