@@ -1362,7 +1362,7 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
 
    *  Additive blinding is possibly unsafe, unless one of the following
       conditions is met: The client has a certified copy of the server
-      public key, as is the case in verifiable mode, the client input
+      public key (as is the case in verifiable mode), the client input
       has high entropy, or the client mixes the public key into the OPRF
       evaluation.
 
@@ -1372,7 +1372,7 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
    has high entropy.  Applications wherein either of these conditions
    are true MAY use additive blinding.
 
-   The verifiable mode always makes use of the more optimal additive
+   The verifiable mode always makes use of the more efficient additive
    blinding variant, as the public key is always available for verifying
    the proof.
 
