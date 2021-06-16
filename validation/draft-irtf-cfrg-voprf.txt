@@ -1369,10 +1369,10 @@ def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, pro
 
 7.3.  Element and Scalar Validation
 
-   The DeserializeElement function converts an arbitrary byte array to a
-   group element.  This function validates that the element is a proper
-   member of the group and is not the identity element, and returns an
-   error if either condition is not met.
+   The DeserializeElement function recovers a group element from an
+   arbitrary byte array.  This function validates that the element is a
+   proper member of the group and is not the identity element, and
+   returns an error if either condition is not met.
 
    For P-256, P-384, and P-521 ciphersuites, this function performs
    partial public-key validation as defined in Section 5.6.2.3.4 of
@@ -1386,8 +1386,8 @@ def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, pro
    respectively, which returns false if the element is invalid.  If this
    function returns false, deserialization returns an error.
 
-   The DeserializeScalar function converts an arbitrary byte array to a
-   scalar field element.  Like DeserializeElement, this function
+   The DeserializeScalar function recovers a scalar field element from
+   an arbitrary byte array.  Like DeserializeElement, this function
    validates that the element is a member of the scalar field and
    returns an error if this condition is not met.
 
