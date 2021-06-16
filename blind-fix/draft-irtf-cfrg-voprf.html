@@ -2809,10 +2809,17 @@ document. The results can be summarized as follows:<a href="#section-6.4-2" clas
 <ul class="normal">
 <li class="normal" id="section-6.4-3.1">Multiplicative blinding is safe for all applications.<a href="#section-6.4-3.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-6.4-3.2">Additive blinding is possibly unsafe, unless one of the following conditions
-is met: The client has a certified copy of the server public key (as is the
-case in verifiable mode), the client input has high entropy, or the client mixes
-the public key into the OPRF evaluation.<a href="#section-6.4-3.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-6.4-3.2">
+            <p id="section-6.4-3.2.1">Additive blinding is possibly unsafe, unless one of the following conditions
+is met:<a href="#section-6.4-3.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.4-3.2.2.1">The client has a certified copy of the server public key (as is the case in the verifiable mode)<a href="#section-6.4-3.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-6.4-3.2.2.2">The client input has high entropy<a href="#section-6.4-3.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-6.4-3.2.2.3">The client mixes the public key into the OPRF evaluation.<a href="#section-6.4-3.2.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
 </li>
         </ul>
 <p id="section-6.4-4">To avoid security issues with the base mode, where some of the above conditions may not be met, this specification RECOMMENDS use of
