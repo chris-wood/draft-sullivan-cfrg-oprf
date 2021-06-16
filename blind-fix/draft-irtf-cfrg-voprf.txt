@@ -5,10 +5,10 @@
 Network Working Group                                        A. Davidson
 Internet-Draft                                                          
 Intended status: Informational                          A. Faz-Hernandez
-Expires: 17 December 2021                                    N. Sullivan
+Expires: 18 December 2021                                    N. Sullivan
                                                                C.A. Wood
                                                               Cloudflare
-                                                            15 June 2021
+                                                            16 June 2021
 
 
    Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 December 2021.
+   This Internet-Draft will expire on 18 December 2021.
 
 Copyright Notice
 
@@ -1349,11 +1349,11 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
    This document makes use of two types of blinding variants:
    multiplicative and additive.  The advantage of additive blinding is
    that it allows the client to pre-process tables of multiples of the
-   group generator.  This gives computational efficiency advantage, due
-   to the fact that, by using precomputation, fixed-base multiplications
-   can be calculated faster than variable-base multiplications.  Pre-
-   processing also reduces the amount of computation that needs to be
-   done in the online exchange.
+   group generator.  This can provide a computational efficiency
+   advantage due to the fact that, by using precomputation, fixed-base
+   multiplications can be calculated faster than variable-base
+   multiplications.  Pre-processing also reduces the amount of
+   computation that needs to be done in the online exchange.
 
    However, the choice of blinding mechanism has security implications.
    [JKX21] analyze the security properties of both blinding mechanisms
