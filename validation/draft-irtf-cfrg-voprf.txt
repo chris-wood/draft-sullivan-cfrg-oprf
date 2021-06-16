@@ -1186,8 +1186,8 @@ def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, pro
 
    *  "VerifyError": VOPRF proof verification failed; Section 3.4.4.2.
 
-   *  "DeserializeError": Public element or secret scalar
-      deserialization failure; Section 2.1.
+   *  "DeserializeError": Group element or scalar deserialization
+      failure; Section 2.1.
 
    The errors in this document are meant as a guide to implementors.
    They are not an exhaustive list of all the errors an implementation
