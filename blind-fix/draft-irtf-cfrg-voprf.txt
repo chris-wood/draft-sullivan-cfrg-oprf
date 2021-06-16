@@ -1367,11 +1367,12 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
       has high entropy, or the client mixes the public key into the OPRF
       evaluation.
 
-   To avoid security issues with the base mode, this specification
-   RECOMMENDS use of multiplicative blinding.  This is because it is not
-   known if the server public key is available or if the client input
-   has high entropy.  Applications wherein either of these conditions
-   are true MAY use additive blinding.
+   To avoid security issues with the base mode, where some of the above
+   conditions may not be met, this specification RECOMMENDS use of
+   multiplicative blinding.  This is because it is not known if the
+   server public key is available or if the client input has high
+   entropy.  Applications wherein either of these conditions are true
+   MAY use additive blinding.
 
    The verifiable mode always makes use of the more efficient additive
    blinding variant, as the public key is always available for verifying
