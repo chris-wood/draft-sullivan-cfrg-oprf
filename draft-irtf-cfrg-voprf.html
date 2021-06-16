@@ -22,11 +22,11 @@ evaluating the underlying PRF with just a public key. This document
 specifies OPRF and VOPRF constructions instantiated within prime-order
 groups, including elliptic curves. 
     " name="description">
-<meta content="xml2rfc 3.7.0" name="generator">
+<meta content="xml2rfc 3.8.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-irtf-cfrg-voprf-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.7.0
+  xml2rfc 3.8.0
     Python 3.8.10
     appdirs 1.4.4
     ConfigArgParse 1.2.3
@@ -38,14 +38,177 @@ groups, including elliptic curves.
     lxml 4.6.3
     pycountry 20.7.3
     pyflakes 2.2.0
-    PyYAML 5.4.1
+    PyYAML 5.3.1
     requests 2.25.1
     setuptools 51.3.3
     six 1.15.0
 -->
 <link href="draft-irtf-cfrg-voprf.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
-<style type="text/css">@import url('https://martinthomson.github.io/i-d-template/fonts.css');
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 html {
   --background-color: #fff;
@@ -856,11 +1019,11 @@ address div.right {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">OPRFs</td>
-<td class="right">May 2021</td>
+<td class="right">June 2021</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Davidson, et al.</td>
-<td class="center">Expires 21 November 2021</td>
+<td class="center">Expires 18 December 2021</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -873,12 +1036,12 @@ address div.right {
 <dd class="internet-draft">draft-irtf-cfrg-voprf-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2021-05-20" class="published">20 May 2021</time>
+<time datetime="2021-06-16" class="published">16 June 2021</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2021-11-21">21 November 2021</time></dd>
+<dd class="expires"><time datetime="2021-12-18">18 December 2021</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -941,7 +1104,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 21 November 2021.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 18 December 2021.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -969,8 +1132,8 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
         <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
 <a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
         </h2>
-<nav class="toc"><ul class="ulEmpty toc compact">
-<li class="ulEmpty toc compact" id="section-toc.1-1.1">
+<nav class="toc"><ul class="ulEmpty compact toc">
+<li class="ulEmpty compact toc" id="section-toc.1-1.1">
             <p id="section-toc.1-1.1.1"><a href="#section-1" class="xref">1</a>.  <a href="#name-introduction" class="xref">Introduction</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.1.2.1">
@@ -984,7 +1147,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.2">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.2">
             <p id="section-toc.1-1.2.1"><a href="#section-2" class="xref">2</a>.  <a href="#name-preliminaries" class="xref">Preliminaries</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.2.2.1">
@@ -995,7 +1158,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.3">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.3">
             <p id="section-toc.1-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-oprf-protocol" class="xref">OPRF Protocol</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.3.2.1">
@@ -1026,17 +1189,17 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.4">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.4">
             <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-domain-separation" class="xref">Domain Separation</a></p>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.5">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.5">
             <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-ciphersuites" class="xref">Ciphersuites</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.5.2.1">
                 <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="xref">5.1</a>.  <a href="#name-oprfristretto255-sha-512" class="xref">OPRF(ristretto255, SHA-512)</a></p>
 </li>
               <li class="ulEmpty compact toc" id="section-toc.1-1.5.2.2">
-                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-oprfdecaf448-sha-512" class="xref">OPRF(decaf448, SHA-512)</a></p>
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-oprfdecaf448-shake-256" class="xref">OPRF(decaf448, SHAKE-256)</a></p>
 </li>
               <li class="ulEmpty compact toc" id="section-toc.1-1.5.2.3">
                 <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="xref">5.3</a>.  <a href="#name-oprfp-256-sha-256" class="xref">OPRF(P-256, SHA-256)</a></p>
@@ -1049,7 +1212,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.6">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.6">
             <p id="section-toc.1-1.6.1"><a href="#section-6" class="xref">6</a>.  <a href="#name-security-considerations" class="xref">Security Considerations</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.6.2.1">
@@ -1083,7 +1246,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.7">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.7">
             <p id="section-toc.1-1.7.1"><a href="#section-7" class="xref">7</a>.  <a href="#name-additive-blinding" class="xref">Additive Blinding</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.7.2.1">
@@ -1102,10 +1265,10 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.8">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.8">
             <p id="section-toc.1-1.8.1"><a href="#section-8" class="xref">8</a>.  <a href="#name-acknowledgements" class="xref">Acknowledgements</a></p>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.9">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.9">
             <p id="section-toc.1-1.9.1"><a href="#section-9" class="xref">9</a>.  <a href="#name-references" class="xref">References</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.9.2.1">
@@ -1116,7 +1279,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.10">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.10">
             <p id="section-toc.1-1.10.1"><a href="#section-appendix.a" class="xref">Appendix A</a>.  <a href="#name-test-vectors" class="xref">Test Vectors</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.10.2.1">
@@ -1131,7 +1294,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
                 </ul>
 </li>
               <li class="ulEmpty compact toc" id="section-toc.1-1.10.2.2">
-                <p id="section-toc.1-1.10.2.2.1"><a href="#section-a.2" class="xref">A.2</a>.  <a href="#name-oprfdecaf448-sha-512-2" class="xref">OPRF(decaf448, SHA-512)</a></p>
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-a.2" class="xref">A.2</a>.  <a href="#name-oprfdecaf448-shake-256-2" class="xref">OPRF(decaf448, SHAKE-256)</a></p>
 <ul class="ulEmpty compact toc">
 <li class="ulEmpty compact toc" id="section-toc.1-1.10.2.2.2.1">
                     <p id="section-toc.1-1.10.2.2.2.1.1"><a href="#section-a.2.1" class="xref">A.2.1</a>.  <a href="#name-base-mode-2" class="xref">Base Mode</a></p>
@@ -1176,7 +1339,7 @@ groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">
 </li>
             </ul>
 </li>
-          <li class="ulEmpty toc compact" id="section-toc.1-1.11">
+          <li class="ulEmpty compact toc" id="section-toc.1-1.11">
             <p id="section-toc.1-1.11.1"><a href="#section-appendix.b" class="xref"></a><a href="#name-authors-addresses" class="xref">Authors' Addresses</a></p>
 </li>
         </ul>
@@ -1427,11 +1590,11 @@ representation of a scalar.<a href="#section-2.1-4.9" class="pilcrow">¶</a>
 </li>
         </ul>
 <p id="section-2.1-5">Two functions can be used for generating a (V)OPRF key pair (<code>skS</code>, <code>pkS</code>)
-where <code>skS</code> is a non-zero integer less than <code>p</code> and <code>pkS = ScalarBaseMult(skS)</code>: 
-<code>GenerateKeyPair</code> and <code>DeriveKeyPair</code>. <code>GenerateKeyPair</code> is a randomized function 
-that outputs a fresh key pair (<code>skS</code>, <code>pkS</code>) upon ever invocation. <code>DeriveKeyPair</code> 
-is a  deterministic  function that generates private key <code>skS</code> from a random byte 
-string <code>seed</code> that  SHOULD have at least <code>Ns</code> bytes of entropy, and then 
+where <code>skS</code> is a non-zero integer less than <code>p</code> and <code>pkS = ScalarBaseMult(skS)</code>:
+<code>GenerateKeyPair</code> and <code>DeriveKeyPair</code>. <code>GenerateKeyPair</code> is a randomized function
+that outputs a fresh key pair (<code>skS</code>, <code>pkS</code>) upon ever invocation. <code>DeriveKeyPair</code>
+is a  deterministic  function that generates private key <code>skS</code> from a random byte
+string <code>seed</code> that  SHOULD have at least <code>Ns</code> bytes of entropy, and then
 computes <code>pkS = ScalarBaseMult(skS)</code>.<a href="#section-2.1-5" class="pilcrow">¶</a></p>
 <p id="section-2.1-6">It is convenient in cryptographic applications to instantiate such
 prime-order groups using elliptic curves, such as those detailed in
@@ -2205,7 +2368,9 @@ instantiations of the following functionalities:<a href="#section-5-1" class="pi
 point defined in the corresponding reference for each group. Each group also
 specifies HashToGroup, HashToScalar, and serialization functionalities. For
 HashToGroup, the domain separation tag (DST) is constructed in accordance
-with the recommendations in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>, Section 3.1.<a href="#section-5-2.1" class="pilcrow">¶</a>
+with the recommendations in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>, Section 3.1.
+For HashToScalar, each group specifies an integer order that is used in
+reducing integer values to a member of the corresponding scalar field.<a href="#section-5-2.1" class="pilcrow">¶</a>
 </li>
         <li class="normal" id="section-5-2.2">
           <code>Hash</code>: A cryptographic hash function that is indifferentiable from a
@@ -2238,8 +2403,8 @@ modulo <code>Order()</code>.<a href="#section-5.1-1.1.2.2" class="pilcrow">¶</a
 </li>
               <li class="normal" id="section-5.1-1.1.2.3">Serialization: Both group elements and scalars are encoded in Ne = Ns = 32
 bytes. For group elements, use the 'Encode' and 'Decode' functions from
-<span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo p and
-in little-endian order.<a href="#section-5.1-1.1.2.3" class="pilcrow">¶</a>
+<span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo <code>Order()</code>
+and in little-endian order.<a href="#section-5.1-1.1.2.3" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
@@ -2250,10 +2415,10 @@ in little-endian order.<a href="#section-5.1-1.1.2.3" class="pilcrow">¶</a>
         </ul>
 </section>
 </div>
-<div id="oprfdecaf448-sha-512">
+<div id="oprfdecaf448-shake-256">
 <section id="section-5.2">
-        <h3 id="name-oprfdecaf448-sha-512">
-<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-oprfdecaf448-sha-512" class="section-name selfRef">OPRF(decaf448, SHA-512)</a>
+        <h3 id="name-oprfdecaf448-shake-256">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-oprfdecaf448-shake-256" class="section-name selfRef">OPRF(decaf448, SHAKE-256)</a>
         </h3>
 <ul class="normal">
 <li class="normal" id="section-5.2-1.1">
@@ -2261,22 +2426,22 @@ in little-endian order.<a href="#section-5.1-1.1.2.3" class="pilcrow">¶</a>
 <ul class="normal">
 <li class="normal" id="section-5.2-1.1.2.1">HashToGroup(): Use hash_to_decaf448
 <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> with DST =
-"HashToGroup-" || contextString, and <code>expand_message</code> = <code>expand_message_xmd</code>
-using SHA-512.<a href="#section-5.2-1.1.2.1" class="pilcrow">¶</a>
+"HashToGroup-" || contextString, and <code>expand_message</code> = <code>expand_message_xof</code>
+using SHAKE-256.<a href="#section-5.2-1.1.2.1" class="pilcrow">¶</a>
 </li>
-              <li class="normal" id="section-5.2-1.1.2.2">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xmd</code>,
+              <li class="normal" id="section-5.2-1.1.2.2">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xof</code>,
 DST = "HashToScalar-" || contextString, and output length 64, interpret
 <code>uniform_bytes</code> as a 512-bit integer in little-endian order, and reduce the integer
 modulo <code>Order()</code>.<a href="#section-5.2-1.1.2.2" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-5.2-1.1.2.3">Serialization: Both group elements and scalars are encoded in Ne = Ns = 56
 bytes. For group elements, use the 'Encode' and 'Decode' functions from
-<span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo p and
-in little-endian order.<a href="#section-5.2-1.1.2.3" class="pilcrow">¶</a>
+<span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo <code>Order()</code>
+and in little-endian order.<a href="#section-5.2-1.1.2.3" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
-          <li class="normal" id="section-5.2-1.2">Hash: SHA-512, and Nh = 64.<a href="#section-5.2-1.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.2-1.2">Hash: SHAKE-256, and Nh = 64.<a href="#section-5.2-1.2" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-5.2-1.3">ID: 0x0002<a href="#section-5.2-1.3" class="pilcrow">¶</a>
 </li>
@@ -2297,12 +2462,13 @@ in little-endian order.<a href="#section-5.2-1.1.2.3" class="pilcrow">¶</a>
 "HashToGroup-" || contextString.<a href="#section-5.3-1.1.2.1" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-5.3-1.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
-using Order() as the prime modulus, L = 48, <code>expand_message_xmd</code>
-with SHA-256, and DST = "HashToScalar-" || contextString.<a href="#section-5.3-1.1.2.2" class="pilcrow">¶</a>
+using L = 48, <code>expand_message_xmd</code> with SHA-256,
+DST = "HashToScalar-" || contextString, and
+prime modulus equal to <code>Order()</code>.<a href="#section-5.3-1.1.2.2" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-5.3-1.1.2.3">Serialization: Elements are serialized as Ne = 33 byte strings using
 compressed point encoding for the curve <span>[<a href="#SEC1" class="xref">SEC1</a>]</span>. Scalars are serialized as
-Ns = 32 byte strings by fully reducing the value modulo p and in big-endian
+Ns = 32 byte strings by fully reducing the value modulo <code>Order()</code> and in big-endian
 order.<a href="#section-5.3-1.1.2.3" class="pilcrow">¶</a>
 </li>
             </ul>
@@ -2328,12 +2494,13 @@ order.<a href="#section-5.3-1.1.2.3" class="pilcrow">¶</a>
 "HashToGroup-" || contextString.<a href="#section-5.4-1.1.2.1" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-5.4-1.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
-using Order() as the prime modulus, L = 72, <code>expand_message_xmd</code>
-with SHA-512, and DST = "HashToScalar-" || contextString.<a href="#section-5.4-1.1.2.2" class="pilcrow">¶</a>
+using L = 72, <code>expand_message_xmd</code> with SHA-512,
+DST = "HashToScalar-" || contextString, and
+prime modulus equal to <code>Order()</code>.<a href="#section-5.4-1.1.2.2" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-5.4-1.1.2.3">Serialization: Elements are serialized as Ne = 49 byte strings using
 compressed point encoding for the curve <span>[<a href="#SEC1" class="xref">SEC1</a>]</span>. Scalars are serialized as
-Ns = 48 byte strings by fully reducing the value modulo p and in big-endian
+Ns = 48 byte strings by fully reducing the value modulo <code>Order()</code> and in big-endian
 order.<a href="#section-5.4-1.1.2.3" class="pilcrow">¶</a>
 </li>
             </ul>
@@ -2359,12 +2526,13 @@ order.<a href="#section-5.4-1.1.2.3" class="pilcrow">¶</a>
 "HashToGroup-" || contextString.<a href="#section-5.5-1.1.2.1" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-5.5-1.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
-using Order() as the prime modulus, L = 98, <code>expand_message_xmd</code>
-with SHA-512, and DST = "HashToScalar-" || contextString.<a href="#section-5.5-1.1.2.2" class="pilcrow">¶</a>
+using L = 98, <code>expand_message_xmd</code> with SHA-512,
+DST = "HashToScalar-" || contextString, and
+prime modulus equal to <code>Order()</code>.<a href="#section-5.5-1.1.2.2" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-5.5-1.1.2.3">Serialization: Elements are serialized as Ne = 67 byte strings using
 compressed point encoding for the curve <span>[<a href="#SEC1" class="xref">SEC1</a>]</span>. Scalars are serialized as
-Ns = 66 byte strings by fully reducing the value modulo p and in big-endian
+Ns = 66 byte strings by fully reducing the value modulo <code>Order()</code> and in big-endian
 order.<a href="#section-5.5-1.1.2.3" class="pilcrow">¶</a>
 </li>
             </ul>
@@ -2811,7 +2979,7 @@ provided helpful input and contributions to the document.<a href="#section-8-1" 
 <dd class="break"></dd>
 <dt id="I-D.irtf-cfrg-opaque">[I-D.irtf-cfrg-opaque]</dt>
         <dd>
-<span class="refAuthor">Krawczyk, H.</span>, <span class="refAuthor">Bourdrez, D.</span>, <span class="refAuthor">Lewi, K.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"The OPAQUE Asymmetric PAKE Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-opaque-04</span>, <time datetime="2021-05-03" class="refDate">3 May 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-04.txt">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-04.txt</a>&gt;</span>. </dd>
+<span class="refAuthor">Krawczyk, H.</span>, <span class="refAuthor">Bourdrez, D.</span>, <span class="refAuthor">Lewi, K.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"The OPAQUE Asymmetric PAKE Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-opaque-05</span>, <time datetime="2021-06-07" class="refDate">7 June 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05.txt">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05.txt</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="JKK14">[JKK14]</dt>
         <dd>
@@ -3077,10 +3245,10 @@ c,8e2e8c97b685f0d425ae8658d798f67293092deb823242a9417ec846a8fd7ffac8
 </div>
 </section>
 </div>
-<div id="oprfdecaf448-sha-512-1">
+<div id="oprfdecaf448-shake-256-1">
 <section id="section-a.2">
-        <h2 id="name-oprfdecaf448-sha-512-2">
-<a href="#section-a.2" class="section-number selfRef">A.2. </a><a href="#name-oprfdecaf448-sha-512-2" class="section-name selfRef">OPRF(decaf448, SHA-512)</a>
+        <h2 id="name-oprfdecaf448-shake-256-2">
+<a href="#section-a.2" class="section-number selfRef">A.2. </a><a href="#name-oprfdecaf448-shake-256-2" class="section-name selfRef">OPRF(decaf448, SHAKE-256)</a>
         </h2>
 <div id="base-mode-1">
 <section id="section-a.2.1">
@@ -3091,8 +3259,8 @@ c,8e2e8c97b685f0d425ae8658d798f67293092deb823242a9417ec846a8fd7ffac8
 <pre>
 seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
 3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
-skSm = 1c776d9cea1190c8e36b574b78f89715197bc3af604f9935e6491c6b48b61
-82aecb2a7b2e28de593e3cb3b35f6a4ecab99e5e4eca8a24a08
+skSm = 1c122faee287c03fe0335709ff5c3ae894afb1af6bc23f2ac29a13aa68517
+2d96eb20c529765b90d7e5729bebed085cff8c4c970a02b5a02
 </pre><a href="#section-a.2.1-1" class="pilcrow">¶</a>
 </div>
 <div id="test-vector-1-batch-size-1-2">
@@ -3105,13 +3273,13 @@ skSm = 1c776d9cea1190c8e36b574b78f89715197bc3af604f9935e6491c6b48b61
 Input = 00
 Blind = d1080372f0fcf8c5eace50914e7127f576725f215cc7c111673c635ce668
 bbbb9b50601ad89b358ab8c23ed0b6c9d040365ec9d060868714
-BlindedElement = dcd47f1697514034d9fc0d312d6049e018bd6bac9b3259dd399
-b51df670300e13b3a5e74b2794cbbecfbc0b7c90482d8a6f4750c82a4af04
-EvaluationElement = ecae5e32d4517da739ed0cff4b299e433d2a7f783729cd13
-5ade609a82ca030b0d154719992b8222033295591d53c0a03ac66fdcd069e0a9
-Output = 84304d7f48095c5aceb09911644d663fa9161b4bf49b50e648f8b09f91b
-1c5746a0ed1d2a48990dc4e9c3be33603b5ef2c621518cf82c11919e34c918a76f84
-7
+BlindedElement = ae531d67081d88ec2c3d4fa0ada4c19eea7cb14a3028a071128
+5b3c00a828fbae1b5b7b13fbd81fbd629f4765d75d8bfa0d228971f5d4d0e
+EvaluationElement = b05e9027190b8c90e4f0e5d69e1d6244621ae1b99908e26a
+18c1fcb7d7960c1c759df117dbfdb262c9ff03211fc174a56e4c5613caaa766b
+Output = db8e4eb7f13bed68474403da6b6c5d3580328d8d56a5726ee090db873e3
+05534cebc491010f2f4c40409904819d711b0ccb487049a08838f02b09f440e9f677
+4
 </pre><a href="#section-a.2.1.1-1" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3126,13 +3294,13 @@ Output = 84304d7f48095c5aceb09911644d663fa9161b4bf49b50e648f8b09f91b
 Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
 Blind = aed1ffa44fd8f0ed16373606a3cf7df589cca86d8ea1abbf5768771dbef3
 d401c74ae55ba1e28b9565e1e4018eb261a14134a4ce60c1c718
-BlindedElement = 28e25219cfdea084e0349e5249f842b6d117f9512191263e1d7
-125ca740b31971ca99a2d346fec0b3c5afd29562ba02fb078dfac2d319e07
-EvaluationElement = f03bf99457cf666af4271b748ebf632e763e25030aabb6c7
-13db1a844b92a8dc8f6842ac164c07fd10432b8e23acb348a44e6248725ee457
-Output = 91b830c8e8ca95d5143c02ec147506c6515b6bf51e45f26321cb9ee6581
-242d9df876084a247a733be14ccf3dc16f0a92e6985f9e98976ab68436bd8e92ca9b
-1
+BlindedElement = eaa242fe3e8696ac173fa96c5314c00ae9fe4312716bbadbd32
+e352db3b33a3faa0f3e295623a4b189c37d0e606c750a31bbccaa744a741d
+EvaluationElement = d2ae6c747fbb053f07a989970d386baf12ad862dfbbc19bc
+d8763c360f00b51795b4ebc01427969ad3beb5f83d1772adc92770abee187ab0
+Output = 36fbf2a529f52189856eb21bda822c15cdc59e67ea2405dfd7bc0eb3377
+10c90ec5247ddb57368e7681704cad3be668b5c78f3e9b7176db5ba7920b3fe69599
+e
 </pre><a href="#section-a.2.1.2-1" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3148,10 +3316,10 @@ Output = 91b830c8e8ca95d5143c02ec147506c6515b6bf51e45f26321cb9ee6581
 <pre>
 seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
 3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
-skSm = eac0b641d6df0e27348bd3bfe81591f736ec321fcefdd345c5f8200c8338b
-e3cc1bb094cd579f311060f8a3aae54457d18a86b7380952d20
-pkSm = 9cdbd627f6b2e5fb2d35469d3d762d5044dbc5bc8f1067bf516d035c76227
-11c990c584e127350b5db66eef098b707b34901cdfe68de3c52
+skSm = f9054ff1428ab7e433dfe4284e285a46fff7244b6720c252c04399baf0bcf
+37264e30f204e22d55ec68a1a4741d262debcdc6f1967e9b52b
+pkSm = 80c6fe37e3775b9e658606eb63110fc4b6d50788abc6d49b9dc043a6eb696
+a6bc7e968f098ca14437c0c1e14021a08b2c1f1a735d0110b41
 </pre><a href="#section-a.2.2-1" class="pilcrow">¶</a>
 </div>
 <div id="test-vector-1-batch-size-1-3">
@@ -3164,17 +3332,17 @@ pkSm = 9cdbd627f6b2e5fb2d35469d3d762d5044dbc5bc8f1067bf516d035c76227
 Input = 00
 Blind = 4c936db1779a621b6c71475ac3111fd5703a59b713929f36dfd1e892a7fe
 814479c93d8b4b6e11d1f6fe5351e51457b665fa7b76074e531f
-BlindedElement = e81533d1a9225aac867739832c5f2c0fe3bf4245e9fc261beee
-b3804ec701e698a586c3aa88896f49901cebe03e170ba79edf0890b2ed668
-EvaluationElement = 789257cd7b3b30115d941096a2ead8f4f1fa8e2d926c067b
-175fa40aca074dc968bc56aa290f964b4bbaa7ba8fc245fd6aa4a9feea87e4e9
-EvaluationProofC = 336e2a97ef380c3051c10eaffe100945d534f9987976a0f74
-5f4f079d33a733710e2696a6477dfaaf9011843b2105ad4ed7e1efe9cae752e
-EvaluationProofS = 1b524f1198e85d4b682d9d4335c9f2c7ee68bf6430971a018
-d7af5a406122336f2fe49487a7b864d60f829b00d585678c443b40aec58990f
-Output = d85d1dc1017b7e7f865ab526bd533e808f9d38969cd1d1e17394c344c8d
-2b3fcfd5fc1fe1cc2d2abf087c047d455070e609bb156f5232b93fb5507a8de559c0
-3
+BlindedElement = 905abce5e899e0838d1c5db9431cb656c40a720971085259503
+65098e312de8dbb7db938602ad0af68aa70cda46447042bfee30772b90590
+EvaluationElement = c0ece3b532ce1f3bb2fa6fd3f5665070038ad2b8c2406c80
+75ec2a47645290317aba61a1312b3853f6a7c5276755ae36eb298feda5e9a82e
+EvaluationProofC = 5b33c448d28657260c0eb6b8d9abb7450b93024198eb1d19e
+0fc4c260010ede97d56e4891000add1591c4a7a9ab76a8c837964406f6dc423
+EvaluationProofS = 37b15b0e183ac5c75d0376562acbaf5479eb3cc52ad718a52
+8fcf24c736dc7b499be262916670fe2c1d29da89a2ced5b51b9a00619b6cc1f
+Output = aca8629d596db97e207f5ce5f8b3e52fd3a2f55986b6707aa0100b36946
+5894b67a2f70d8095e1c1ef8d9d483d87d61d12585c0bfa1a8d4e2c0e801ccd4387c
+e
 </pre><a href="#section-a.2.2.1-1" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3189,17 +3357,17 @@ Output = d85d1dc1017b7e7f865ab526bd533e808f9d38969cd1d1e17394c344c8d
 Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
 Blind = 15b3355179392f40c3d5a15f0d5ffc354e340454ec779f575e4573a3886a
 b5e57e4da2985cea9e32f6d95539ce2c7189e1bd7462e8c5483a
-BlindedElement = b285637ffb0d97fa253c3efc1369a2c7ccb84c250f03a698c97
-091036f33d9ec789867c0897e80cfdfc5a10abe9e8e8a5f9bd3636f2b27e5
-EvaluationElement = 6ec28350fa245117edb450dcb3ec62b83515b7065aad30f1
-6c690c19256577c72ce4945fd295abc77ff92a1959486e7290313b2dfebd0824
-EvaluationProofC = edb482cc0eaf8c3b3c081c04a0ac4dcfa38ed4b949a3134a4
-ea41656461de9e155bcb9a8b75554cfe15878825d2a579453b7b16127774f21
-EvaluationProofS = 6582f9841ea5665d7833d458a2cb8a5aedc43df58087e5920
-8d24194365fae89eb841ff918453bb357b61e28f6c18833638edebc30b1e022
-Output = dfaf18c8c14dae6e442fe99fb0574b5ad895e826c157cade571a9542671
-8be1fb23b3f0defddb9627c8723af69ee053fb9cdc236295bf01f361b4084a30518d
-d
+BlindedElement = 887b4bc44acd63a4a4a1986a75166155bc39c4b08aa1c92cced
+b2568d1604cf7a455ea294a3394544defb1acb22000784854d66d546de1de
+EvaluationElement = a6c18b026623dd8b44c0f52062e56d1ba9498944087af192
+11d1675e920ff347bd3086d017711afa97a4e827c77b7ee3174f79b06e919b5c
+EvaluationProofC = 8da602a004ac32fdc439d51dd07537459254252233950d793
+265d320cb37dbcc275400940ec87533368fc6f6fb9dff3dc28ca10081964110
+EvaluationProofS = 3dae74b52f28ab3adcae8f0bdefae3bd6cd3657855e20f0fc
+16aba9db40965f4554a2efd575e14562754fdf3ecf9ac896fb91b038696b43a
+Output = d38127857cade4f852df7b59fd73679f0e52c35df54bc237c574b5224ff
+ec31a0d7d95bb9357c12c58a1a161ce5639fbcb12a90581ff825442ee72f68b388bc
+6
 </pre><a href="#section-a.2.2.2-1" class="pilcrow">¶</a>
 </div>
 </section>
@@ -3216,22 +3384,22 @@ Blind = 614bb578f29cc677ea9e7aea3e4839413997e020f9377b63c13584156a09
 a46dd2a425c41eac0e313a47e99d05df72c6e1d58e6592577a0d,4c115060bca87db
 7d73e00cbb8559f84cb7a221b235b0950a0ab553f03f10e1386abe954011b7da62bb
 6599418ef90b5d4ea98cc28aff517
-BlindedElement = 5eb7b615250eb20511c6fe4e3ad8f401f96acf64a8a8bee5cc8
-deee97469d4730ff376675968ebd69f7bc0cda262057dddeb695aa7912954,8e1426
-8f71e8abdf1df956a32b09110dfe6d83f4b89a2ba2a869f69adf675b661fc2dcaf36
-dfcdf5223cdbd2d31ff3142d7cfd172a312239
-EvaluationElement = 9c5be5c5342bd27f35b69b9d5f637e8711b2a5a9a3c456dc
-16b8efc4f11c276dec8e08c763fb5084166e16e338214e78cf814e596caefd5a,f25
-daaec5624137d831760dd5417b61afaef965c8f6367e663064b18d612821119b41c9
-3123b215e0ff9dff56538decea44d686e1c9bd68e
-EvaluationProofC = 203791f8214bda1e904b4eeb1cbf8ad5b5a0b9929384dd09a
-f13838dcf31c3107c6fa6c107683c0b9f6615dac8fcafdb8baf0a8053cd8f3a
-EvaluationProofS = d5289d3b168e4dd8e7dd9c66e63bfcb021ccc49285a7da2d6
-611892e390115020d97af97bd090755bd0fc77e46f187cf9f362e52af26db25
-Output = d85d1dc1017b7e7f865ab526bd533e808f9d38969cd1d1e17394c344c8d
-2b3fcfd5fc1fe1cc2d2abf087c047d455070e609bb156f5232b93fb5507a8de559c0
-3,dfaf18c8c14dae6e442fe99fb0574b5ad895e826c157cade571a95426718be1fb2
-3b3f0defddb9627c8723af69ee053fb9cdc236295bf01f361b4084a30518dd
+BlindedElement = 3e7ca1a8bb9e46dd121003fa6f18644a1415441eb4671b0739a
+34ca0ebc8544bbce93bd0f9d79502b443c580c545eb589c77f3ee6c7a6888,8628f5
+7556d1e7ed08e33eab7709812a291c5da74b76e9de121d56d72da16950c920c90f7f
+f5d93ec1e544010587bc86328d3c033e14307f
+EvaluationElement = f62cb835a6bf03c6846f8b7601905b17e799b1b4e6194ae2
+b3ea1419480c02afde92591f8a5bbb0dca24d897ff943ba69595d8c2effc3b02,6e2
+5c0ebd277a575e8a50a858210ba5f34ac9d1cda05963b6d0d89bed962fb894d70bb4
+a806bcab3d09b186fe70392aa125ab2d5d6920f63
+EvaluationProofC = 899f8d7fc4fc67745377c959ce152e548d8a4309d46d36df1
+b3ff499dea3b0f870ada4a1a71823e20e0f00979d6f727730e57c4edf3ec106
+EvaluationProofS = 7336332ccfe9fb9a47b278ff296708e14e5728f4dfe45d63a
+de8d2254914b50f104bb65cd5ec6d7512d773f0e2ac79f251c8db601a60cf04
+Output = aca8629d596db97e207f5ce5f8b3e52fd3a2f55986b6707aa0100b36946
+5894b67a2f70d8095e1c1ef8d9d483d87d61d12585c0bfa1a8d4e2c0e801ccd4387c
+e,d38127857cade4f852df7b59fd73679f0e52c35df54bc237c574b5224ffec31a0d
+7d95bb9357c12c58a1a161ce5639fbcb12a90581ff825442ee72f68b388bc6
 </pre><a href="#section-a.2.2.3-1" class="pilcrow">¶</a>
 </div>
 </section>

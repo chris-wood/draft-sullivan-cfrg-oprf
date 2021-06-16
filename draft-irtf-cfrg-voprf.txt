@@ -5,10 +5,10 @@
 Network Working Group                                        A. Davidson
 Internet-Draft                                                          
 Intended status: Informational                          A. Faz-Hernandez
-Expires: 21 November 2021                                    N. Sullivan
+Expires: 18 December 2021                                    N. Sullivan
                                                                C.A. Wood
                                                               Cloudflare
-                                                             20 May 2021
+                                                            16 June 2021
 
 
    Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 November 2021.
+   This Internet-Draft will expire on 18 December 2021.
 
 Copyright Notice
 
@@ -87,7 +87,7 @@ Table of Contents
    4.  Domain Separation
    5.  Ciphersuites
      5.1.  OPRF(ristretto255, SHA-512)
-     5.2.  OPRF(decaf448, SHA-512)
+     5.2.  OPRF(decaf448, SHAKE-256)
      5.3.  OPRF(P-256, SHA-256)
      5.4.  OPRF(P-384, SHA-512)
      5.5.  OPRF(P-521, SHA-512)
@@ -114,7 +114,7 @@ Table of Contents
      A.1.  OPRF(ristretto255, SHA-512)
        A.1.1.  Base Mode
        A.1.2.  Verifiable Mode
-     A.2.  OPRF(decaf448, SHA-512)
+     A.2.  OPRF(decaf448, SHAKE-256)
        A.2.1.  Base Mode
        A.2.2.  Verifiable Mode
      A.3.  OPRF(P-256, SHA-256)
@@ -986,6 +986,9 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
       HashToScalar, and serialization functionalities.  For HashToGroup,
       the domain separation tag (DST) is constructed in accordance with
       the recommendations in [I-D.irtf-cfrg-hash-to-curve], Section 3.1.
+      For HashToScalar, each group specifies an integer order that is
+      used in reducing integer values to a member of the corresponding
+      scalar field.
 
    *  "Hash": A cryptographic hash function that is indifferentiable
       from a Random Oracle, whose output length is Nh bytes long.
@@ -1015,23 +1018,23 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
       -  Serialization: Both group elements and scalars are encoded in
          Ne = Ns = 32 bytes.  For group elements, use the 'Encode' and
          'Decode' functions from [RISTRETTO].  For scalars, ensure they
-         are fully reduced modulo p and in little-endian order.
+         are fully reduced modulo "Order()" and in little-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
 
    *  ID: 0x0001
 
-5.2.  OPRF(decaf448, SHA-512)
+5.2.  OPRF(decaf448, SHAKE-256)
 
    *  Group: decaf448 [RISTRETTO]
 
       -  HashToGroup(): Use hash_to_decaf448
          [I-D.irtf-cfrg-hash-to-curve] with DST = "HashToGroup-" ||
-         contextString, and "expand_message" = "expand_message_xmd"
-         using SHA-512.
+         contextString, and "expand_message" = "expand_message_xof"
+         using SHAKE-256.
 
       -  HashToScalar(): Compute "uniform_bytes" using "expand_message"
-         = "expand_message_xmd", DST = "HashToScalar-" || contextString,
+         = "expand_message_xof", DST = "HashToScalar-" || contextString,
          and output length 64, interpret "uniform_bytes" as a 512-bit
          integer in little-endian order, and reduce the integer modulo
          "Order()".
@@ -1039,9 +1042,9 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
       -  Serialization: Both group elements and scalars are encoded in
          Ne = Ns = 56 bytes.  For group elements, use the 'Encode' and
          'Decode' functions from [RISTRETTO].  For scalars, ensure they
-         are fully reduced modulo p and in little-endian order.
+         are fully reduced modulo "Order()" and in little-endian order.
 
-   *  Hash: SHA-512, and Nh = 64.
+   *  Hash: SHAKE-256, and Nh = 64.
 
    *  ID: 0x0002
 
@@ -1054,14 +1057,14 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
          "HashToGroup-" || contextString.
 
       -  HashToScalar(): Use hash_to_field from
-         [I-D.irtf-cfrg-hash-to-curve] using Order() as the prime
-         modulus, L = 48, "expand_message_xmd" with SHA-256, and DST =
-         "HashToScalar-" || contextString.
+         [I-D.irtf-cfrg-hash-to-curve] using L = 48,
+         "expand_message_xmd" with SHA-256, DST = "HashToScalar-" ||
+         contextString, and prime modulus equal to "Order()".
 
       -  Serialization: Elements are serialized as Ne = 33 byte strings
          using compressed point encoding for the curve [SEC1].  Scalars
          are serialized as Ns = 32 byte strings by fully reducing the
-         value modulo p and in big-endian order.
+         value modulo "Order()" and in big-endian order.
 
    *  Hash: SHA-256, and Nh = 32.
 
@@ -1076,14 +1079,14 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
          "HashToGroup-" || contextString.
 
       -  HashToScalar(): Use hash_to_field from
-         [I-D.irtf-cfrg-hash-to-curve] using Order() as the prime
-         modulus, L = 72, "expand_message_xmd" with SHA-512, and DST =
-         "HashToScalar-" || contextString.
+         [I-D.irtf-cfrg-hash-to-curve] using L = 72,
+         "expand_message_xmd" with SHA-512, DST = "HashToScalar-" ||
+         contextString, and prime modulus equal to "Order()".
 
       -  Serialization: Elements are serialized as Ne = 49 byte strings
          using compressed point encoding for the curve [SEC1].  Scalars
          are serialized as Ns = 48 byte strings by fully reducing the
-         value modulo p and in big-endian order.
+         value modulo "Order()" and in big-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
 
@@ -1098,14 +1101,14 @@ def Finalize(input, blind, evaluatedElement, blindedElement, pkS, proof):
          "HashToGroup-" || contextString.
 
       -  HashToScalar(): Use hash_to_field from
-         [I-D.irtf-cfrg-hash-to-curve] using Order() as the prime
-         modulus, L = 98, "expand_message_xmd" with SHA-512, and DST =
-         "HashToScalar-" || contextString.
+         [I-D.irtf-cfrg-hash-to-curve] using L = 98,
+         "expand_message_xmd" with SHA-512, DST = "HashToScalar-" ||
+         contextString, and prime modulus equal to "Order()".
 
       -  Serialization: Elements are serialized as Ne = 67 byte strings
          using compressed point encoding for the curve [SEC1].  Scalars
          are serialized as Ns = 66 byte strings by fully reducing the
-         value modulo p and in big-endian order.
+         value modulo "Order()" and in big-endian order.
 
    *  Hash: SHA-512, and Nh = 64.
 
@@ -1476,9 +1479,9 @@ def AdditiveBlind(input, blindedGenerator):
    [I-D.irtf-cfrg-opaque]
               Krawczyk, H., Bourdrez, D., Lewi, K., and C. A. Wood, "The
               OPAQUE Asymmetric PAKE Protocol", Work in Progress,
-              Internet-Draft, draft-irtf-cfrg-opaque-04, 3 May 2021,
+              Internet-Draft, draft-irtf-cfrg-opaque-05, 7 June 2021,
               <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
-              opaque-04.txt>.
+              opaque-05.txt>.
 
    [JKK14]    "Round-Optimal Password-Protected Secret Sharing and
               T-PAKE in the Password-Only model",
@@ -1678,83 +1681,83 @@ A.1.2.3.  Test Vector 3, Batch Size 2
    c,8e2e8c97b685f0d425ae8658d798f67293092deb823242a9417ec846a8fd7ffac8
    9228b05ace8b65fe759686a1162e00829ef9e803634a296861dcb656f36a34
 
-A.2.  OPRF(decaf448, SHA-512)
+A.2.  OPRF(decaf448, SHAKE-256)
 
 A.2.1.  Base Mode
 
    seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
    3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
-   skSm = 1c776d9cea1190c8e36b574b78f89715197bc3af604f9935e6491c6b48b61
-   82aecb2a7b2e28de593e3cb3b35f6a4ecab99e5e4eca8a24a08
+   skSm = 1c122faee287c03fe0335709ff5c3ae894afb1af6bc23f2ac29a13aa68517
+   2d96eb20c529765b90d7e5729bebed085cff8c4c970a02b5a02
 
 A.2.1.1.  Test Vector 1, Batch Size 1
 
    Input = 00
    Blind = d1080372f0fcf8c5eace50914e7127f576725f215cc7c111673c635ce668
    bbbb9b50601ad89b358ab8c23ed0b6c9d040365ec9d060868714
-   BlindedElement = dcd47f1697514034d9fc0d312d6049e018bd6bac9b3259dd399
-   b51df670300e13b3a5e74b2794cbbecfbc0b7c90482d8a6f4750c82a4af04
-   EvaluationElement = ecae5e32d4517da739ed0cff4b299e433d2a7f783729cd13
-   5ade609a82ca030b0d154719992b8222033295591d53c0a03ac66fdcd069e0a9
-   Output = 84304d7f48095c5aceb09911644d663fa9161b4bf49b50e648f8b09f91b
-   1c5746a0ed1d2a48990dc4e9c3be33603b5ef2c621518cf82c11919e34c918a76f84
-   7
+   BlindedElement = ae531d67081d88ec2c3d4fa0ada4c19eea7cb14a3028a071128
+   5b3c00a828fbae1b5b7b13fbd81fbd629f4765d75d8bfa0d228971f5d4d0e
+   EvaluationElement = b05e9027190b8c90e4f0e5d69e1d6244621ae1b99908e26a
+   18c1fcb7d7960c1c759df117dbfdb262c9ff03211fc174a56e4c5613caaa766b
+   Output = db8e4eb7f13bed68474403da6b6c5d3580328d8d56a5726ee090db873e3
+   05534cebc491010f2f4c40409904819d711b0ccb487049a08838f02b09f440e9f677
+   4
 
 A.2.1.2.  Test Vector 2, Batch Size 1
 
    Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
    Blind = aed1ffa44fd8f0ed16373606a3cf7df589cca86d8ea1abbf5768771dbef3
    d401c74ae55ba1e28b9565e1e4018eb261a14134a4ce60c1c718
-   BlindedElement = 28e25219cfdea084e0349e5249f842b6d117f9512191263e1d7
-   125ca740b31971ca99a2d346fec0b3c5afd29562ba02fb078dfac2d319e07
-   EvaluationElement = f03bf99457cf666af4271b748ebf632e763e25030aabb6c7
-   13db1a844b92a8dc8f6842ac164c07fd10432b8e23acb348a44e6248725ee457
-   Output = 91b830c8e8ca95d5143c02ec147506c6515b6bf51e45f26321cb9ee6581
-   242d9df876084a247a733be14ccf3dc16f0a92e6985f9e98976ab68436bd8e92ca9b
-   1
+   BlindedElement = eaa242fe3e8696ac173fa96c5314c00ae9fe4312716bbadbd32
+   e352db3b33a3faa0f3e295623a4b189c37d0e606c750a31bbccaa744a741d
+   EvaluationElement = d2ae6c747fbb053f07a989970d386baf12ad862dfbbc19bc
+   d8763c360f00b51795b4ebc01427969ad3beb5f83d1772adc92770abee187ab0
+   Output = 36fbf2a529f52189856eb21bda822c15cdc59e67ea2405dfd7bc0eb3377
+   10c90ec5247ddb57368e7681704cad3be668b5c78f3e9b7176db5ba7920b3fe69599
+   e
 
 A.2.2.  Verifiable Mode
 
    seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
    3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
-   skSm = eac0b641d6df0e27348bd3bfe81591f736ec321fcefdd345c5f8200c8338b
-   e3cc1bb094cd579f311060f8a3aae54457d18a86b7380952d20
-   pkSm = 9cdbd627f6b2e5fb2d35469d3d762d5044dbc5bc8f1067bf516d035c76227
-   11c990c584e127350b5db66eef098b707b34901cdfe68de3c52
+   skSm = f9054ff1428ab7e433dfe4284e285a46fff7244b6720c252c04399baf0bcf
+   37264e30f204e22d55ec68a1a4741d262debcdc6f1967e9b52b
+   pkSm = 80c6fe37e3775b9e658606eb63110fc4b6d50788abc6d49b9dc043a6eb696
+   a6bc7e968f098ca14437c0c1e14021a08b2c1f1a735d0110b41
 
 A.2.2.1.  Test Vector 1, Batch Size 1
 
    Input = 00
    Blind = 4c936db1779a621b6c71475ac3111fd5703a59b713929f36dfd1e892a7fe
    814479c93d8b4b6e11d1f6fe5351e51457b665fa7b76074e531f
-   BlindedElement = e81533d1a9225aac867739832c5f2c0fe3bf4245e9fc261beee
-   b3804ec701e698a586c3aa88896f49901cebe03e170ba79edf0890b2ed668
-   EvaluationElement = 789257cd7b3b30115d941096a2ead8f4f1fa8e2d926c067b
-   175fa40aca074dc968bc56aa290f964b4bbaa7ba8fc245fd6aa4a9feea87e4e9
-   EvaluationProofC = 336e2a97ef380c3051c10eaffe100945d534f9987976a0f74
-   5f4f079d33a733710e2696a6477dfaaf9011843b2105ad4ed7e1efe9cae752e
-   EvaluationProofS = 1b524f1198e85d4b682d9d4335c9f2c7ee68bf6430971a018
-   d7af5a406122336f2fe49487a7b864d60f829b00d585678c443b40aec58990f
-   Output = d85d1dc1017b7e7f865ab526bd533e808f9d38969cd1d1e17394c344c8d
-   2b3fcfd5fc1fe1cc2d2abf087c047d455070e609bb156f5232b93fb5507a8de559c0
-   3
+   BlindedElement = 905abce5e899e0838d1c5db9431cb656c40a720971085259503
+   65098e312de8dbb7db938602ad0af68aa70cda46447042bfee30772b90590
+   EvaluationElement = c0ece3b532ce1f3bb2fa6fd3f5665070038ad2b8c2406c80
+   75ec2a47645290317aba61a1312b3853f6a7c5276755ae36eb298feda5e9a82e
+   EvaluationProofC = 5b33c448d28657260c0eb6b8d9abb7450b93024198eb1d19e
+   0fc4c260010ede97d56e4891000add1591c4a7a9ab76a8c837964406f6dc423
+   EvaluationProofS = 37b15b0e183ac5c75d0376562acbaf5479eb3cc52ad718a52
+   8fcf24c736dc7b499be262916670fe2c1d29da89a2ced5b51b9a00619b6cc1f
+   Output = aca8629d596db97e207f5ce5f8b3e52fd3a2f55986b6707aa0100b36946
+   5894b67a2f70d8095e1c1ef8d9d483d87d61d12585c0bfa1a8d4e2c0e801ccd4387c
+   e
 
 A.2.2.2.  Test Vector 2, Batch Size 1
 
    Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
    Blind = 15b3355179392f40c3d5a15f0d5ffc354e340454ec779f575e4573a3886a
    b5e57e4da2985cea9e32f6d95539ce2c7189e1bd7462e8c5483a
-   BlindedElement = b285637ffb0d97fa253c3efc1369a2c7ccb84c250f03a698c97
-   091036f33d9ec789867c0897e80cfdfc5a10abe9e8e8a5f9bd3636f2b27e5
-   EvaluationElement = 6ec28350fa245117edb450dcb3ec62b83515b7065aad30f1
-   6c690c19256577c72ce4945fd295abc77ff92a1959486e7290313b2dfebd0824
-   EvaluationProofC = edb482cc0eaf8c3b3c081c04a0ac4dcfa38ed4b949a3134a4
-   ea41656461de9e155bcb9a8b75554cfe15878825d2a579453b7b16127774f21
-   EvaluationProofS = 6582f9841ea5665d7833d458a2cb8a5aedc43df58087e5920
-   8d24194365fae89eb841ff918453bb357b61e28f6c18833638edebc30b1e022
-   Output = dfaf18c8c14dae6e442fe99fb0574b5ad895e826c157cade571a9542671
-   8be1fb23b3f0defddb9627c8723af69ee053fb9cdc236295bf01f361b4084a30518d
-   d
+   BlindedElement = 887b4bc44acd63a4a4a1986a75166155bc39c4b08aa1c92cced
+   b2568d1604cf7a455ea294a3394544defb1acb22000784854d66d546de1de
+   EvaluationElement = a6c18b026623dd8b44c0f52062e56d1ba9498944087af192
+   11d1675e920ff347bd3086d017711afa97a4e827c77b7ee3174f79b06e919b5c
+   EvaluationProofC = 8da602a004ac32fdc439d51dd07537459254252233950d793
+   265d320cb37dbcc275400940ec87533368fc6f6fb9dff3dc28ca10081964110
+   EvaluationProofS = 3dae74b52f28ab3adcae8f0bdefae3bd6cd3657855e20f0fc
+   16aba9db40965f4554a2efd575e14562754fdf3ecf9ac896fb91b038696b43a
+   Output = d38127857cade4f852df7b59fd73679f0e52c35df54bc237c574b5224ff
+   ec31a0d7d95bb9357c12c58a1a161ce5639fbcb12a90581ff825442ee72f68b388bc
+   6
 
 A.2.2.3.  Test Vector 3, Batch Size 2
 
@@ -1763,22 +1766,22 @@ A.2.2.3.  Test Vector 3, Batch Size 2
    a46dd2a425c41eac0e313a47e99d05df72c6e1d58e6592577a0d,4c115060bca87db
    7d73e00cbb8559f84cb7a221b235b0950a0ab553f03f10e1386abe954011b7da62bb
    6599418ef90b5d4ea98cc28aff517
-   BlindedElement = 5eb7b615250eb20511c6fe4e3ad8f401f96acf64a8a8bee5cc8
-   deee97469d4730ff376675968ebd69f7bc0cda262057dddeb695aa7912954,8e1426
-   8f71e8abdf1df956a32b09110dfe6d83f4b89a2ba2a869f69adf675b661fc2dcaf36
-   dfcdf5223cdbd2d31ff3142d7cfd172a312239
-   EvaluationElement = 9c5be5c5342bd27f35b69b9d5f637e8711b2a5a9a3c456dc
-   16b8efc4f11c276dec8e08c763fb5084166e16e338214e78cf814e596caefd5a,f25
-   daaec5624137d831760dd5417b61afaef965c8f6367e663064b18d612821119b41c9
-   3123b215e0ff9dff56538decea44d686e1c9bd68e
-   EvaluationProofC = 203791f8214bda1e904b4eeb1cbf8ad5b5a0b9929384dd09a
-   f13838dcf31c3107c6fa6c107683c0b9f6615dac8fcafdb8baf0a8053cd8f3a
-   EvaluationProofS = d5289d3b168e4dd8e7dd9c66e63bfcb021ccc49285a7da2d6
-   611892e390115020d97af97bd090755bd0fc77e46f187cf9f362e52af26db25
-   Output = d85d1dc1017b7e7f865ab526bd533e808f9d38969cd1d1e17394c344c8d
-   2b3fcfd5fc1fe1cc2d2abf087c047d455070e609bb156f5232b93fb5507a8de559c0
-   3,dfaf18c8c14dae6e442fe99fb0574b5ad895e826c157cade571a95426718be1fb2
-   3b3f0defddb9627c8723af69ee053fb9cdc236295bf01f361b4084a30518dd
+   BlindedElement = 3e7ca1a8bb9e46dd121003fa6f18644a1415441eb4671b0739a
+   34ca0ebc8544bbce93bd0f9d79502b443c580c545eb589c77f3ee6c7a6888,8628f5
+   7556d1e7ed08e33eab7709812a291c5da74b76e9de121d56d72da16950c920c90f7f
+   f5d93ec1e544010587bc86328d3c033e14307f
+   EvaluationElement = f62cb835a6bf03c6846f8b7601905b17e799b1b4e6194ae2
+   b3ea1419480c02afde92591f8a5bbb0dca24d897ff943ba69595d8c2effc3b02,6e2
+   5c0ebd277a575e8a50a858210ba5f34ac9d1cda05963b6d0d89bed962fb894d70bb4
+   a806bcab3d09b186fe70392aa125ab2d5d6920f63
+   EvaluationProofC = 899f8d7fc4fc67745377c959ce152e548d8a4309d46d36df1
+   b3ff499dea3b0f870ada4a1a71823e20e0f00979d6f727730e57c4edf3ec106
+   EvaluationProofS = 7336332ccfe9fb9a47b278ff296708e14e5728f4dfe45d63a
+   de8d2254914b50f104bb65cd5ec6d7512d773f0e2ac79f251c8db601a60cf04
+   Output = aca8629d596db97e207f5ce5f8b3e52fd3a2f55986b6707aa0100b36946
+   5894b67a2f70d8095e1c1ef8d9d483d87d61d12585c0bfa1a8d4e2c0e801ccd4387c
+   e,d38127857cade4f852df7b59fd73679f0e52c35df54bc237c574b5224ffec31a0d
+   7d95bb9357c12c58a1a161ce5639fbcb12a90581ff825442ee72f68b388bc6
 
 A.3.  OPRF(P-256, SHA-256)
 
