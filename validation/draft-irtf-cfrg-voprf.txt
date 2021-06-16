@@ -1179,7 +1179,7 @@ def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, pro
 6.  API Considerations
 
    Some VOPRF APIs specified in this document are fallible.  For
-   example, "Finalize()" and "Evaluate" can fail if any element received
+   example, "Finalize" and "Evaluate" can fail if any element received
    from the peer fails deserialization.  The explicit errors generated
    throughout this specification, along with the conditions that lead to
    each error, are as follows:
