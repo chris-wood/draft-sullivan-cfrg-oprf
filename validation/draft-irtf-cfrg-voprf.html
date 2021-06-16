@@ -1,0 +1,4006 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups</title>
+<meta content="Alex Davidson" name="author">
+<meta content="Armando Faz-Hernandez" name="author">
+<meta content="Nick Sullivan" name="author">
+<meta content="Christopher A. Wood" name="author">
+<meta content="
+       An Oblivious Pseudorandom Function (OPRF) is a two-party protocol for
+computing the output of a PRF. One party (the server) holds the PRF
+secret key, and the other (the client) holds the PRF input. The
+'obliviousness' property ensures that the server does not learn anything
+about the client's input during the evaluation. The client should also
+not learn anything about the server's secret PRF key. Optionally, OPRFs
+can also satisfy a notion 'verifiability' (VOPRF). In this setting, the
+client can verify that the server's output is indeed the result of
+evaluating the underlying PRF with just a public key. This document
+specifies OPRF and VOPRF constructions instantiated within prime-order
+groups, including elliptic curves. 
+    " name="description">
+<meta content="xml2rfc 3.8.0" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-irtf-cfrg-voprf-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.8.0
+    Python 3.8.10
+    appdirs 1.4.4
+    ConfigArgParse 1.2.3
+    google-i18n-address 2.4.0
+    html5lib 1.1
+    intervaltree 3.1.0
+    Jinja2 2.11.2
+    kitchen 1.2.6
+    lxml 4.6.3
+    pycountry 20.7.3
+    pyflakes 2.2.0
+    PyYAML 5.3.1
+    requests 2.25.1
+    setuptools 51.3.3
+    six 1.15.0
+-->
+<link href="draft-irtf-cfrg-voprf.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html {
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  scrollbar-color: #bbb #eee;
+}
+@media (prefers-color-scheme: dark) {
+html {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+#title, #rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+#rfcnum + #title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p, #abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 18px;
+  line-height: 24px;
+}
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+dd.break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href].selfRef {
+  color: var(--text-color);
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px 'Oxygen Mono', monospace;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  pre {
+    display: inline-block;
+    overflow-x: auto;
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  pre + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+tr:nth-child(2n) > td {
+  background-color: var(--background-color);
+}
+tr:nth-child(2n+1) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody > tr:nth-child(2n) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody > tr:nth-child(2n+1) > td {
+  background-color: var(--background-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+}
+a.pilcrow[href] { color: var(--pilcrow-weak); }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media not print {
+  :hover > a.pilcrow {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 8em;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  margin: 0;
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0 0 0 calc(1em + var(--identifier-width));
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+#toc a.xref {
+  white-space: normal;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 500px) {
+  .index ul {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  .index ul ul {
+    column-count: 1;
+    column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul p, #toc ul li {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table .text-left, table .text-left {
+  text-align: left;
+}
+table .text-center, table .text-center {
+  text-align: center;
+}
+table .text-right, table .text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+</style>
+
+</head>
+<body>
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">OPRFs</td>
+<td class="right">June 2021</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Davidson, et al.</td>
+<td class="center">Expires 18 December 2021</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Network Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-irtf-cfrg-voprf-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2021-06-16" class="published">16 June 2021</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2021-12-18">18 December 2021</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">A. Davidson</div>
+</div>
+<div class="author">
+      <div class="author-name">A. Faz-Hernandez</div>
+<div class="org">Cloudflare</div>
+</div>
+<div class="author">
+      <div class="author-name">N. Sullivan</div>
+<div class="org">Cloudflare</div>
+</div>
+<div class="author">
+      <div class="author-name">C.A. Wood</div>
+<div class="org">Cloudflare</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">An Oblivious Pseudorandom Function (OPRF) is a two-party protocol for
+computing the output of a PRF. One party (the server) holds the PRF
+secret key, and the other (the client) holds the PRF input. The
+'obliviousness' property ensures that the server does not learn anything
+about the client's input during the evaluation. The client should also
+not learn anything about the server's secret PRF key. Optionally, OPRFs
+can also satisfy a notion 'verifiability' (VOPRF). In this setting, the
+client can verify that the server's output is indeed the result of
+evaluating the underlying PRF with just a public key. This document
+specifies OPRF and VOPRF constructions instantiated within prime-order
+groups, including elliptic curves.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-discussion-venues">
+<a href="#name-discussion-venues" class="section-name selfRef">Discussion Venues</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">Source for this draft and an issue tracker can be found at
+  <span><a href="https://github.com/cfrg/draft-irtf-cfrg-voprf">https://github.com/cfrg/draft-irtf-cfrg-voprf</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 18 December 2021.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2021 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Simplified BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Simplified BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1"><a href="#section-1" class="xref">1</a>.  <a href="#name-introduction" class="xref">Introduction</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="xref">1.1</a>.  <a href="#name-change-log" class="xref">Change log</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="xref">1.2</a>.  <a href="#name-terminology" class="xref">Terminology</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.1.2.3">
+                <p id="section-toc.1-1.1.2.3.1" class="keepWithNext"><a href="#section-1.3" class="xref">1.3</a>.  <a href="#name-requirements" class="xref">Requirements</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="xref">2</a>.  <a href="#name-preliminaries" class="xref">Preliminaries</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="xref">2.1</a>.  <a href="#name-prime-order-group-dependenc" class="xref">Prime-Order Group Dependency</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="xref">2.2</a>.  <a href="#name-other-conventions" class="xref">Other Conventions</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-oprf-protocol" class="xref">OPRF Protocol</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="xref">3.1</a>.  <a href="#name-overview" class="xref">Overview</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="xref">3.2</a>.  <a href="#name-context-setup" class="xref">Context Setup</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="xref">3.3</a>.  <a href="#name-data-types" class="xref">Data Types</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.3.2.4">
+                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="xref">3.4</a>.  <a href="#name-context-apis" class="xref">Context APIs</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.3.2.4.2.1">
+                    <p id="section-toc.1-1.3.2.4.2.1.1"><a href="#section-3.4.1" class="xref">3.4.1</a>.  <a href="#name-server-context" class="xref">Server Context</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.3.2.4.2.2">
+                    <p id="section-toc.1-1.3.2.4.2.2.1"><a href="#section-3.4.2" class="xref">3.4.2</a>.  <a href="#name-verifiableservercontext" class="xref">VerifiableServerContext</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.3.2.4.2.3">
+                    <p id="section-toc.1-1.3.2.4.2.3.1"><a href="#section-3.4.3" class="xref">3.4.3</a>.  <a href="#name-client-context" class="xref">Client Context</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.3.2.4.2.4">
+                    <p id="section-toc.1-1.3.2.4.2.4.1"><a href="#section-3.4.4" class="xref">3.4.4</a>.  <a href="#name-verifiableclientcontext" class="xref">VerifiableClientContext</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-domain-separation" class="xref">Domain Separation</a></p>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-ciphersuites" class="xref">Ciphersuites</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="xref">5.1</a>.  <a href="#name-oprfristretto255-sha-512" class="xref">OPRF(ristretto255, SHA-512)</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-oprfdecaf448-shake-256" class="xref">OPRF(decaf448, SHAKE-256)</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="xref">5.3</a>.  <a href="#name-oprfp-256-sha-256" class="xref">OPRF(P-256, SHA-256)</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="xref">5.4</a>.  <a href="#name-oprfp-384-sha-512" class="xref">OPRF(P-384, SHA-512)</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.5.2.5">
+                <p id="section-toc.1-1.5.2.5.1"><a href="#section-5.5" class="xref">5.5</a>.  <a href="#name-oprfp-521-sha-512" class="xref">OPRF(P-521, SHA-512)</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="xref">6</a>.  <a href="#name-api-considerations" class="xref">API Considerations</a></p>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="xref">7</a>.  <a href="#name-security-considerations" class="xref">Security Considerations</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="xref">7.1</a>.  <a href="#name-security-properties" class="xref">Security Properties</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="xref">7.2</a>.  <a href="#name-cryptographic-security" class="xref">Cryptographic Security</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.7.2.2.2.1">
+                    <p id="section-toc.1-1.7.2.2.2.1.1"><a href="#section-7.2.1" class="xref">7.2.1</a>.  <a href="#name-computational-hardness-assu" class="xref">Computational Hardness Assumptions</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.2.2.2">
+                    <p id="section-toc.1-1.7.2.2.2.2.1"><a href="#section-7.2.2" class="xref">7.2.2</a>.  <a href="#name-protocol-security" class="xref">Protocol Security</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.2.2.3">
+                    <p id="section-toc.1-1.7.2.2.2.3.1"><a href="#section-7.2.3" class="xref">7.2.3</a>.  <a href="#name-q-strong-dh-oracle" class="xref">Q-Strong-DH Oracle</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.2.2.4">
+                    <p id="section-toc.1-1.7.2.2.2.4.1"><a href="#section-7.2.4" class="xref">7.2.4</a>.  <a href="#name-implications-for-ciphersuit" class="xref">Implications for Ciphersuite Choices</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="xref">7.3</a>.  <a href="#name-element-and-scalar-validati" class="xref">Element and Scalar Validation</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.4">
+                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="xref">7.4</a>.  <a href="#name-hashing-to-group" class="xref">Hashing to Group</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.5">
+                <p id="section-toc.1-1.7.2.5.1"><a href="#section-7.5" class="xref">7.5</a>.  <a href="#name-blinding-considerations" class="xref">Blinding Considerations</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.6">
+                <p id="section-toc.1-1.7.2.6.1"><a href="#section-7.6" class="xref">7.6</a>.  <a href="#name-timing-leaks" class="xref">Timing Leaks</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.7.2.7">
+                <p id="section-toc.1-1.7.2.7.1"><a href="#section-7.7" class="xref">7.7</a>.  <a href="#name-key-rotation" class="xref">Key Rotation</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.7.2.7.2.1">
+                    <p id="section-toc.1-1.7.2.7.2.1.1"><a href="#section-7.7.1" class="xref">7.7.1</a>.  <a href="#name-parameter-commitments" class="xref">Parameter Commitments</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="xref">8</a>.  <a href="#name-acknowledgements" class="xref">Acknowledgements</a></p>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="xref">9</a>.  <a href="#name-references" class="xref">References</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.9.2.1">
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="xref">9.1</a>.  <a href="#name-normative-references" class="xref">Normative References</a></p>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="xref">9.2</a>.  <a href="#name-informative-references" class="xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-appendix.a" class="xref">Appendix A</a>.  <a href="#name-test-vectors" class="xref">Test Vectors</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-a.1" class="xref">A.1</a>.  <a href="#name-oprfristretto255-sha-512-2" class="xref">OPRF(ristretto255, SHA-512)</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.10.2.1.2.1">
+                    <p id="section-toc.1-1.10.2.1.2.1.1"><a href="#section-a.1.1" class="xref">A.1.1</a>.  <a href="#name-base-mode" class="xref">Base Mode</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.1.2.2">
+                    <p id="section-toc.1-1.10.2.1.2.2.1"><a href="#section-a.1.2" class="xref">A.1.2</a>.  <a href="#name-verifiable-mode" class="xref">Verifiable Mode</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-a.2" class="xref">A.2</a>.  <a href="#name-oprfdecaf448-shake-256-2" class="xref">OPRF(decaf448, SHAKE-256)</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.10.2.2.2.1">
+                    <p id="section-toc.1-1.10.2.2.2.1.1"><a href="#section-a.2.1" class="xref">A.2.1</a>.  <a href="#name-base-mode-2" class="xref">Base Mode</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.2.2.2">
+                    <p id="section-toc.1-1.10.2.2.2.2.1"><a href="#section-a.2.2" class="xref">A.2.2</a>.  <a href="#name-verifiable-mode-2" class="xref">Verifiable Mode</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.3">
+                <p id="section-toc.1-1.10.2.3.1"><a href="#section-a.3" class="xref">A.3</a>.  <a href="#name-oprfp-256-sha-256-2" class="xref">OPRF(P-256, SHA-256)</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.10.2.3.2.1">
+                    <p id="section-toc.1-1.10.2.3.2.1.1"><a href="#section-a.3.1" class="xref">A.3.1</a>.  <a href="#name-base-mode-3" class="xref">Base Mode</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.3.2.2">
+                    <p id="section-toc.1-1.10.2.3.2.2.1"><a href="#section-a.3.2" class="xref">A.3.2</a>.  <a href="#name-verifiable-mode-3" class="xref">Verifiable Mode</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.4">
+                <p id="section-toc.1-1.10.2.4.1"><a href="#section-a.4" class="xref">A.4</a>.  <a href="#name-oprfp-384-sha-512-2" class="xref">OPRF(P-384, SHA-512)</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.10.2.4.2.1">
+                    <p id="section-toc.1-1.10.2.4.2.1.1"><a href="#section-a.4.1" class="xref">A.4.1</a>.  <a href="#name-base-mode-4" class="xref">Base Mode</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.4.2.2">
+                    <p id="section-toc.1-1.10.2.4.2.2.1"><a href="#section-a.4.2" class="xref">A.4.2</a>.  <a href="#name-verifiable-mode-4" class="xref">Verifiable Mode</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.5">
+                <p id="section-toc.1-1.10.2.5.1"><a href="#section-a.5" class="xref">A.5</a>.  <a href="#name-oprfp-521-sha-512-2" class="xref">OPRF(P-521, SHA-512)</a></p>
+<ul class="toc compact ulEmpty">
+<li class="toc compact ulEmpty" id="section-toc.1-1.10.2.5.2.1">
+                    <p id="section-toc.1-1.10.2.5.2.1.1"><a href="#section-a.5.1" class="xref">A.5.1</a>.  <a href="#name-base-mode-5" class="xref">Base Mode</a></p>
+</li>
+                  <li class="toc compact ulEmpty" id="section-toc.1-1.10.2.5.2.2">
+                    <p id="section-toc.1-1.10.2.5.2.2.1"><a href="#section-a.5.2" class="xref">A.5.2</a>.  <a href="#name-verifiable-mode-5" class="xref">Verifiable Mode</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="toc compact ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-appendix.b" class="xref"></a><a href="#name-authors-addresses" class="xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">A pseudorandom function (PRF) F(k, x) is an efficiently computable
+function taking a private key k and a value x as input. This function is
+pseudorandom if the keyed function K(_) = F(K, _) is indistinguishable
+from a randomly sampled function acting on the same domain and range as
+K(). An oblivious PRF (OPRF) is a two-party protocol between a server
+and a client, where the server holds a PRF key k and the client holds
+some input x. The protocol allows both parties to cooperate in computing
+F(k, x) such that: the client learns F(k, x) without learning anything
+about k; and the server does not learn anything about x or F(k, x).
+A Verifiable OPRF (VOPRF) is an OPRF wherein the server can prove to the
+client that F(k, x) was computed using the key k.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">The usage of OPRFs has been demonstrated in constructing a number of
+applications: password-protected secret sharing schemes <span>[<a href="#JKKX16" class="xref">JKKX16</a>]</span>;
+privacy-preserving password stores <span>[<a href="#SJKS17" class="xref">SJKS17</a>]</span>; and
+password-authenticated key exchange or PAKE <span>[<a href="#I-D.irtf-cfrg-opaque" class="xref">I-D.irtf-cfrg-opaque</a>]</span>. A VOPRF is
+necessary in some applications, e.g., the Privacy Pass protocol
+<span>[<a href="#I-D.davidson-pp-protocol" class="xref">I-D.davidson-pp-protocol</a>]</span>, wherein this VOPRF is used to generate
+one-time authentication tokens to bypass CAPTCHA challenges. VOPRFs have
+also been used for password-protected secret sharing schemes e.g.
+<span>[<a href="#JKK14" class="xref">JKK14</a>]</span>.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">This document introduces an OPRF protocol built in prime-order groups,
+applying to finite fields of prime-order and also elliptic curve (EC)
+groups. The protocol has the option of being extended to a VOPRF with
+the addition of a NIZK proof for proving discrete log equality
+relations. This proof demonstrates correctness of the computation, using
+a known public key that serves as a commitment to the server's secret
+key. The document describes the protocol, the public-facing API, and its
+security properties.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<div id="change-log">
+<section id="section-1.1">
+        <h3 id="name-change-log">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-change-log" class="section-name selfRef">Change log</a>
+        </h3>
+<p id="section-1.1-1"><a href="https://tools.ietf.org/html/draft-irtf-cfrg-voprf-06">draft-06</a>:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-2.1">Specify of group element and scalar serialization.<a href="#section-1.1-2.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-2.2">Remove info parameter from the protocol API and update domain separation guidance.<a href="#section-1.1-2.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-2.3">Fold Unblind function into Finalize.<a href="#section-1.1-2.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-2.4">Optimize ComputeComposites for servers (using knowledge of the private key).<a href="#section-1.1-2.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-2.5">Specify deterministic key generation method.<a href="#section-1.1-2.5" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-2.6">Update test vectors.<a href="#section-1.1-2.6" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-2.7">Apply various editorial changes.<a href="#section-1.1-2.7" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-1.1-3"><a href="https://tools.ietf.org/html/draft-irtf-cfrg-voprf-05">draft-05</a>:<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-4.1">Move to ristretto255 and decaf448 ciphersuites.<a href="#section-1.1-4.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-4.2">Clean up ciphersuite definitions.<a href="#section-1.1-4.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-4.3">Pin domain separation tag construction to draft version.<a href="#section-1.1-4.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-4.4">Move key generation outside of context construction functions.<a href="#section-1.1-4.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-4.5">Editorial changes.<a href="#section-1.1-4.5" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-1.1-5"><a href="https://tools.ietf.org/html/draft-irtf-cfrg-voprf-04">draft-04</a>:<a href="#section-1.1-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-6.1">Introduce Client and Server contexts for controlling verifiability and
+required functionality.<a href="#section-1.1-6.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-6.2">Condense API.<a href="#section-1.1-6.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-6.3">Remove batching from standard functionality (included as an extension)<a href="#section-1.1-6.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-6.4">Add Curve25519 and P-256 ciphersuites for applications that prevent
+strong-DH oracle attacks.<a href="#section-1.1-6.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-6.5">Provide explicit prime-order group API and instantiation advice for
+each ciphersuite.<a href="#section-1.1-6.5" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-6.6">Proof-of-concept implementation in sage.<a href="#section-1.1-6.6" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-6.7">Remove privacy considerations advice as this depends on applications.<a href="#section-1.1-6.7" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-1.1-7"><a href="https://tools.ietf.org/html/draft-irtf-cfrg-voprf-03">draft-03</a>:<a href="#section-1.1-7" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-8.1">Certify public key during VerifiableFinalize.<a href="#section-1.1-8.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-8.2">Remove protocol integration advice.<a href="#section-1.1-8.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-8.3">Add text discussing how to perform domain separation.<a href="#section-1.1-8.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-8.4">Drop OPRF_/VOPRF_ prefix from algorithm names.<a href="#section-1.1-8.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-8.5">Make prime-order group assumption explicit.<a href="#section-1.1-8.5" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-8.6">Changes to algorithms accepting batched inputs.<a href="#section-1.1-8.6" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-8.7">Changes to construction of batched DLEQ proofs.<a href="#section-1.1-8.7" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-8.8">Updated ciphersuites to be consistent with hash-to-curve and added
+OPRF specific ciphersuites.<a href="#section-1.1-8.8" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-1.1-9"><a href="https://tools.ietf.org/html/draft-irtf-cfrg-voprf-02">draft-02</a>:<a href="#section-1.1-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-10.1">Added section discussing cryptographic security and static DH oracles.<a href="#section-1.1-10.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-10.2">Updated batched proof algorithms.<a href="#section-1.1-10.2" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-1.1-11"><a href="https://tools.ietf.org/html/draft-irtf-cfrg-voprf-01">draft-01</a>:<a href="#section-1.1-11" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-12.1">Updated ciphersuites to be in line with
+https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-04.<a href="#section-1.1-12.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.1-12.2">Made some necessary modular reductions more explicit.<a href="#section-1.1-12.2" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="terminology">
+<section id="section-1.2">
+        <h3 id="name-terminology">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<p id="section-1.2-1">The following terms are used throughout this document.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.2-2.1">PRF: Pseudorandom Function.<a href="#section-1.2-2.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.2-2.2">OPRF: Oblivious Pseudorandom Function.<a href="#section-1.2-2.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.2-2.3">VOPRF: Verifiable Oblivious Pseudorandom Function.<a href="#section-1.2-2.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.2-2.4">Client: Protocol initiator. Learns pseudorandom function evaluation as
+the output of the protocol.<a href="#section-1.2-2.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.2-2.5">Server: Computes the pseudorandom function over a secret key. Learns
+nothing about the client's input.<a href="#section-1.2-2.5" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.2-2.6">NIZK: Non-interactive zero knowledge.<a href="#section-1.2-2.6" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-1.2-2.7">DLEQ: Discrete Logarithm Equality.<a href="#section-1.2-2.7" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="requirements">
+<section id="section-1.3">
+        <h3 id="name-requirements">
+<a href="#section-1.3" class="section-number selfRef">1.3. </a><a href="#name-requirements" class="section-name selfRef">Requirements</a>
+        </h3>
+<p id="section-1.3-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+"MAY", and "OPTIONAL" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-1.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="preliminaries">
+<section id="section-2">
+      <h2 id="name-preliminaries">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-preliminaries" class="section-name selfRef">Preliminaries</a>
+      </h2>
+<p id="section-2-1">The (V)OPRF protocol in this document has two primary dependencies:<a href="#section-2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2-2.1">
+          <code>GG</code>: A prime-order group implementing the API described below in <a href="#pog" class="xref">Section 2.1</a>,
+with base point defined in the corresponding reference for each group.
+(See <a href="#ciphersuites" class="xref">Section 5</a> for these base points.)<a href="#section-2-2.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-2-2.2">
+          <code>Hash</code>: A cryptographic hash function that is indifferentiable from a
+Random Oracle, whose output length is Nh bytes long.<a href="#section-2-2.2" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-2-3"><a href="#ciphersuites" class="xref">Section 5</a> specifies ciphersuites as combinations of <code>GG</code> and <code>Hash</code>.<a href="#section-2-3" class="pilcrow">¶</a></p>
+<div id="pog">
+<section id="section-2.1">
+        <h3 id="name-prime-order-group-dependenc">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-prime-order-group-dependenc" class="section-name selfRef">Prime-Order Group Dependency</a>
+        </h3>
+<p id="section-2.1-1">In this document, we assume the construction of an additive, prime-order
+group <code>GG</code> for performing all mathematical operations. Such groups are
+uniquely determined by the choice of the prime <code>p</code> that defines the
+order of the group. We use <code>GF(p)</code> to represent the finite field of
+order <code>p</code>. For the purpose of understanding and implementing this
+document, we take <code>GF(p)</code> to be equal to the set of integers defined by
+<code>{0, 1, ..., p-1}</code>.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">The fundamental group operation is addition <code>+</code> with identity element
+<code>I</code>. For any elements <code>A</code> and <code>B</code> of the group <code>GG</code>, <code>A + B = B + A</code> is
+also a member of <code>GG</code>. Also, for any <code>A</code> in <code>GG</code>, there exists an element
+<code>-A</code> such that <code>A + (-A) = (-A) + A = I</code>. Scalar multiplication is
+equivalent to the repeated application of the group operation on an
+element A with itself <code>r-1</code> times, this is denoted as <code>r*A = A + ... + A</code>.
+For any element <code>A</code>, <code>p*A=I</code>. We denote <code>G</code> as the fixed generator of
+the group. Scalar base multiplication is equivalent to the repeated
+application of the group operation <code>G</code> with itself <code>r-1</code> times, this
+is denoted as <code>ScalarBaseMult(r)</code>. The set of scalars corresponds to
+<code>GF(p)</code>.<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.1-3">We now detail a number of member functions that can be invoked on a
+prime-order group <code>GG</code>.<a href="#section-2.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.1-4.1">Order(): Outputs the order of <code>GG</code> (i.e. <code>p</code>).<a href="#section-2.1-4.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.2">Identity(): Outputs the identity element of the group (i.e. <code>I</code>).<a href="#section-2.1-4.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.3">HashToGroup(x): A member function of <code>GG</code> that deterministically maps
+an array of bytes <code>x</code> to an element of <code>GG</code>. The map must ensure that,
+for any adversary receiving <code>R = HashToGroup(x)</code>, it is
+computationally difficult to reverse the mapping. Examples of hash to
+group functions satisfying this property are described for prime-order
+(sub)groups of elliptic curves, see <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>.<a href="#section-2.1-4.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.4">HashToScalar(x): A member function of <code>GG</code> that deterministically maps
+an array of bytes <code>x</code> to an element in GF(p). A recommended method
+for its implementation is instantiating the hash to field function,
+defined in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> setting the target field to GF(p).<a href="#section-2.1-4.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.5">RandomScalar(): A member function of <code>GG</code> that chooses at random a
+non-zero element in GF(p).<a href="#section-2.1-4.5" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.6">SerializeElement(A): A member function of <code>GG</code> that maps a group element <code>A</code>
+to a unique byte array <code>buf</code> of fixed length <code>Ne</code>.<a href="#section-2.1-4.6" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.7">DeserializeElement(buf): A member function of <code>GG</code> that maps a byte array
+<code>buf</code> to a group element <code>A</code>, or fails if the input is not a valid
+byte representation of an element. This function can raise a
+DeserializeError if deserialization fails or <code>A</code> is the identity element
+of the group; see <a href="#input-validation" class="xref">Section 7.3</a>.<a href="#section-2.1-4.7" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.8">SerializeScalar(s): A member function of <code>GG</code> that maps a scalar element <code>s</code>
+to a unique byte array <code>buf</code> of fixed length <code>Ns</code>.<a href="#section-2.1-4.8" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.1-4.9">DeserializeScalar(buf): A member function of <code>GG</code> that maps a byte array
+<code>buf</code> to a scalar <code>s</code>, or fails if the input is not a valid byte
+representation of a scalar. This function can raise a
+DeserializeError if deserialization fails; see <a href="#input-validation" class="xref">Section 7.3</a>.<a href="#section-2.1-4.9" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-2.1-5">Two functions can be used for generating a (V)OPRF key pair (<code>skS</code>, <code>pkS</code>)
+where <code>skS</code> is a non-zero integer less than <code>p</code> and <code>pkS = ScalarBaseMult(skS)</code>:
+<code>GenerateKeyPair</code> and <code>DeriveKeyPair</code>. <code>GenerateKeyPair</code> is a randomized function
+that outputs a fresh key pair (<code>skS</code>, <code>pkS</code>) upon ever invocation. <code>DeriveKeyPair</code>
+is a  deterministic  function that generates private key <code>skS</code> from a random byte
+string <code>seed</code> that  SHOULD have at least <code>Ns</code> bytes of entropy, and then
+computes <code>pkS = ScalarBaseMult(skS)</code>.<a href="#section-2.1-5" class="pilcrow">¶</a></p>
+<p id="section-2.1-6">It is convenient in cryptographic applications to instantiate such
+prime-order groups using elliptic curves, such as those detailed in
+<span>[<a href="#SEC2" class="xref">SEC2</a>]</span>. For some choices of elliptic curves (e.g. those detailed in
+<span>[<a href="#RFC7748" class="xref">RFC7748</a>]</span>, which require accounting for cofactors) there are some
+implementation issues that introduce inherent discrepancies between
+standard prime-order groups and the elliptic curve instantiation. In
+this document, all algorithms that we detail assume that the group is a
+prime-order group, and this MUST be upheld by any implementer. That is,
+any curve instantiation should be written such that any discrepancies
+with a prime-order group instantiation are removed. See <a href="#ciphersuites" class="xref">Section 5</a>
+for advice corresponding to the implementation of this interface for
+specific definitions of elliptic curves.<a href="#section-2.1-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="other-conventions">
+<section id="section-2.2">
+        <h3 id="name-other-conventions">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-other-conventions" class="section-name selfRef">Other Conventions</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-2.2-1.1">For any object <code>x</code>, we write <code>len(x)</code> to denote its length in bytes.<a href="#section-2.2-1.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.2-1.2">For two byte arrays <code>x</code> and <code>y</code>, write <code>x || y</code> to denote their
+concatenation.<a href="#section-2.2-1.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-2.2-1.3">I2OSP and OS2IP: Convert a byte array to and from a non-negative
+integer as described in <span>[<a href="#RFC8017" class="xref">RFC8017</a>]</span>. Note that these functions
+operate on byte arrays in big-endian byte order.<a href="#section-2.2-1.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-2.2-2">All algorithm descriptions are written in a Python-like pseudocode.
+We also use the <code>CT_EQUAL(a, b)</code> function to represent constant-time
+byte-wise equality between byte arrays <code>a</code> and <code>b</code>. This function
+returns <code>true</code> if <code>a</code> and <code>b</code> are equal, and <code>false</code> otherwise.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="protocol">
+<section id="section-3">
+      <h2 id="name-oprf-protocol">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-oprf-protocol" class="section-name selfRef">OPRF Protocol</a>
+      </h2>
+<p id="section-3-1">In this section, we define two OPRF variants: a base mode and verifiable
+mode. In the base mode, a client and server interact to compute y =
+F(skS, x), where x is the client's input, skS is the server's private
+key, and y is the OPRF output. The client learns y and the server learns
+nothing. In the verifiable mode, the client also gets proof that the
+server used skS in computing the function.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">To achieve verifiability, as in the original work of <span>[<a href="#JKK14" class="xref">JKK14</a>]</span>, we
+provide a zero-knowledge proof that the key provided as input by the
+server in the <code>Evaluate</code> function is the same key as it used to produce
+their public key. As an example of the nature of attacks that this
+prevents, this ensures that the server uses the same private key for
+computing the VOPRF output and does not attempt to "tag" individual
+servers with select keys. This proof must not reveal the server's
+long-term private key to the client.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">The following one-byte values distinguish between these two modes:<a href="#section-3-3" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+        <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">Mode</th>
+            <th class="text-left" rowspan="1" colspan="1">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">modeBase</td>
+            <td class="text-left" rowspan="1" colspan="1">0x00</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">modeVerifiable</td>
+            <td class="text-left" rowspan="1" colspan="1">0x01</td>
+          </tr>
+        </tbody>
+      </table>
+<div id="protocol-overview">
+<section id="section-3.1">
+        <h3 id="name-overview">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
+        </h3>
+<p id="section-3.1-1">Both participants agree on the mode and a choice of ciphersuite that is
+used before the protocol exchange. Once established, the base mode of
+the protocol runs to compute <code>output = F(skS, input)</code> as follows:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.1-2">
+<pre>
+     Client(input)                             Server(skS)
+  ----------------------------------------------------------
+    blind, blindedElement = Blind(input)
+
+                       blindedElement
+                        ----------&gt;
+
+    evaluatedElement, proof = Evaluate(skS, blindedElement)
+
+                      evaluatedElement
+                        &lt;----------
+
+    output = Finalize(input, blind, evaluatedElement, blindedElement)
+</pre><a href="#section-3.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-3.1-3">In <code>Blind</code> the client generates a token and blinding data. The server
+computes the (V)OPRF evaluation in <code>Evaluation</code> over the client's
+blinded token. In <code>Finalize</code> the client unblinds the server response
+and produces a byte array corresponding to the output of the OPRF protocol.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<p id="section-3.1-4">In the verifiable mode of the protocol, the server additionally computes
+a proof in Evaluate. The client verifies this proof using the server's
+expected public key before completing the protocol and producing the
+protocol output.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="context-setup">
+<section id="section-3.2">
+        <h3 id="name-context-setup">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-context-setup" class="section-name selfRef">Context Setup</a>
+        </h3>
+<p id="section-3.2-1">Both modes of the OPRF involve an offline setup phase. In this phase,
+both the client and server create a context used for executing the
+online phase of the protocol. The key pair (<code>skS</code>, <code>pkS</code>) should be
+generated by calling either <code>GenerateKeyPair</code> or <code>DeriveKeyPair</code>.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.2-2">The base mode setup functions for creating client and server contexts are below:<a href="#section-3.2-2" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.2-3">
+<pre>
+def SetupBaseServer(suite, skS):
+  contextString = "VOPRF06-" || I2OSP(modeBase, 1) || I2OSP(suite.ID, 2)
+  return ServerContext(contextString, skS)
+
+def SetupBaseClient(suite):
+  contextString = "VOPRF06-" || I2OSP(modeBase, 1) || I2OSP(suite.ID, 2)
+  return ClientContext(contextString)
+</pre><a href="#section-3.2-3" class="pilcrow">¶</a>
+</div>
+<p id="section-3.2-4">The verifiable mode setup functions for creating client and server
+contexts are below:<a href="#section-3.2-4" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.2-5">
+<pre>
+def SetupVerifiableServer(suite, skS, pkS):
+  contextString = "VOPRF06-" || I2OSP(modeVerifiable, 1) || I2OSP(suite.ID, 2)
+  return VerifiableServerContext(contextString, skS)
+
+def SetupVerifiableClient(suite, pkS):
+  contextString = "VOPRF06-" || I2OSP(modeVerifiable, 1) || I2OSP(suite.ID, 2)
+  return VerifiableClientContext(contextString, pkS)
+</pre><a href="#section-3.2-5" class="pilcrow">¶</a>
+</div>
+<p id="section-3.2-6">Each setup function takes a ciphersuite from the list defined in
+<a href="#ciphersuites" class="xref">Section 5</a>. Each ciphersuite has a two-byte field ID used to
+identify the suite.<a href="#section-3.2-6" class="pilcrow">¶</a></p>
+<p id="section-3.2-7">[[RFC editor: please change "VOPRF06" to "RFCXXXX", where XXXX is the final number, here and elsewhere before publication.]]<a href="#section-3.2-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="structs">
+<section id="section-3.3">
+        <h3 id="name-data-types">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-data-types" class="section-name selfRef">Data Types</a>
+        </h3>
+<p id="section-3.3-1">The following is a list of data structures that are defined for
+providing inputs and outputs for each of the context interfaces defined
+in <a href="#api" class="xref">Section 3.4</a>. Data structure description uses TLS notation (see <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span>,
+Section 3).<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.3-2">This document uses the types <code>Element</code> and <code>Scalar</code> to denote elements of the
+group <code>GG</code> and its underlying scalar field <code>GF(p)</code>, respectively. For notational
+clarity, <code>PublicKey</code> is an item of type <code>Element</code> and <code>PrivateKey</code> is an item
+of type <code>Scalar</code>. <code>SerializedElement</code> and <code>SerializedScalar</code> are serialized
+representations of <code>Element</code> and <code>Scalar</code> types of length <code>Ne</code> and <code>Ns</code>,
+respectively; see <a href="#pog" class="xref">Section 2.1</a>. <code>ClientInput</code> is an opaque byte string of arbitrary
+length. <code>Proof</code> is a sequence of two <code>SerializedScalar</code> elements, as shown below.<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.3-3">
+<pre>
+SerializedScalar Proof[2];
+</pre><a href="#section-3.3-3" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="api">
+<section id="section-3.4">
+        <h3 id="name-context-apis">
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-context-apis" class="section-name selfRef">Context APIs</a>
+        </h3>
+<p id="section-3.4-1">In this section, we detail the APIs available on the client and server
+(V)OPRF contexts. Each API has the following implicit parameters:<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.4-2.1">GG, a prime-order group implementing the API described in <a href="#pog" class="xref">Section 2.1</a>.<a href="#section-3.4-2.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-3.4-2.2">contextString, a domain separation tag taken from the client or server
+context.<a href="#section-3.4-2.2" class="pilcrow">¶</a>
+</li>
+        </ul>
+<div id="server-context">
+<section id="section-3.4.1">
+          <h4 id="name-server-context">
+<a href="#section-3.4.1" class="section-number selfRef">3.4.1. </a><a href="#name-server-context" class="section-name selfRef">Server Context</a>
+          </h4>
+<p id="section-3.4.1-1">The ServerContext encapsulates the context string constructed during
+setup and the (V)OPRF key pair. It has three functions, <code>Evaluate</code>,
+<code>FullEvaluate</code> and <code>VerifyFinalize</code> described below. <code>Evaluate</code> takes
+serialized representations of blinded group elements from the client as inputs.<a href="#section-3.4.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.1-2"><code>FullEvaluate</code> takes ClientInput values, and it is useful for applications
+that need to compute the whole OPRF protocol on the server side only.<a href="#section-3.4.1-2" class="pilcrow">¶</a></p>
+<p id="section-3.4.1-3"><code>VerifyFinalize</code> takes ClientInput values and their corresponding output
+digests from <code>Finalize</code> as input, and returns true if the inputs match the outputs.<a href="#section-3.4.1-3" class="pilcrow">¶</a></p>
+<p id="section-3.4.1-4">Note that <code>VerifyFinalize</code> and <code>FullEvaluate</code> are not used in the main OPRF
+protocol. They are exposed as an API for building higher-level protocols.<a href="#section-3.4.1-4" class="pilcrow">¶</a></p>
+<div id="evaluate">
+<section id="section-3.4.1.1">
+            <h5 id="name-evaluate">
+<a href="#section-3.4.1.1" class="section-number selfRef">3.4.1.1. </a><a href="#name-evaluate" class="section-name selfRef">Evaluate</a>
+            </h5>
+<div class="artwork art-text alignLeft" id="section-3.4.1.1-1">
+<pre>
+Input:
+
+  PrivateKey skS
+  SerializedElement blindedElement
+
+Output:
+
+  SerializedElement evaluatedElement
+
+Errors: DeserializeError
+
+def Evaluate(skS, blindedElement):
+  R = GG.DeserializeElement(blindedElement)
+  Z = skS * R
+  evaluatedElement = GG.SerializeElement(Z)
+
+  return evaluatedElement
+</pre><a href="#section-3.4.1.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="fullevaluate">
+<section id="section-3.4.1.2">
+            <h5 id="name-fullevaluate">
+<a href="#section-3.4.1.2" class="section-number selfRef">3.4.1.2. </a><a href="#name-fullevaluate" class="section-name selfRef">FullEvaluate</a>
+            </h5>
+<div class="artwork art-text alignLeft" id="section-3.4.1.2-1">
+<pre>
+Input:
+
+  PrivateKey skS
+  ClientInput input
+
+Output:
+
+  opaque output[Nh]
+
+def FullEvaluate(skS, input):
+  P = GG.HashToGroup(input)
+  T = skS * P
+  issuedElement = GG.SerializeElement(T)
+
+  finalizeDST = "Finalize-" || contextString
+  hashInput = I2OSP(len(input), 2) || input ||
+              I2OSP(len(issuedElement), 2) || issuedElement ||
+              I2OSP(len(finalizeDST), 2) || finalizeDST
+
+  return Hash(hashInput)
+</pre><a href="#section-3.4.1.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="verifyfinalize">
+<section id="section-3.4.1.3">
+            <h5 id="name-verifyfinalize">
+<a href="#section-3.4.1.3" class="section-number selfRef">3.4.1.3. </a><a href="#name-verifyfinalize" class="section-name selfRef">VerifyFinalize</a>
+            </h5>
+<div class="artwork art-text alignLeft" id="section-3.4.1.3-1">
+<pre>
+Input:
+
+  PrivateKey skS
+  ClientInput input
+  opaque output[Nh]
+
+Output:
+
+  boolean valid
+
+def VerifyFinalize(skS, input, output):
+  T = GG.HashToGroup(input)
+  element = GG.SerializeElement(T)
+  issuedElement = Evaluate(skS, [element])
+  E = GG.SerializeElement(issuedElement)
+
+  finalizeDST = "Finalize-" || contextString
+  hashInput = I2OSP(len(input), 2) || input ||
+              I2OSP(len(E), 2) || E ||
+              I2OSP(len(finalizeDST), 2) || finalizeDST
+
+  digest = Hash(hashInput)
+
+  return CT_EQUAL(digest, output)
+</pre><a href="#section-3.4.1.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="verifiableservercontext">
+<section id="section-3.4.2">
+          <h4 id="name-verifiableservercontext">
+<a href="#section-3.4.2" class="section-number selfRef">3.4.2. </a><a href="#name-verifiableservercontext" class="section-name selfRef">VerifiableServerContext</a>
+          </h4>
+<p id="section-3.4.2-1">The VerifiableServerContext extends the base ServerContext with an
+augmented <code>Evaluate()</code> function. This function produces a proof that
+<code>skS</code> was used in computing the result. It makes use of the helper
+functions <code>GenerateProof</code> and <code>ComputeComposites</code>, described below.<a href="#section-3.4.2-1" class="pilcrow">¶</a></p>
+<div id="evaluate-1">
+<section id="section-3.4.2.1">
+            <h5 id="name-evaluate-2">
+<a href="#section-3.4.2.1" class="section-number selfRef">3.4.2.1. </a><a href="#name-evaluate-2" class="section-name selfRef">Evaluate</a>
+            </h5>
+<div class="artwork art-text alignLeft" id="section-3.4.2.1-1">
+<pre>
+Input:
+
+  PrivateKey skS
+  PublicKey pkS
+  SerializedElement blindedElement
+
+Output:
+
+  SerializedElement evaluatedElement
+  Proof proof
+
+Errors: DeserializeError
+
+def Evaluate(skS, pkS, blindedElement):
+  R = GG.DeserializeElement(blindedElement)
+  Z = skS * R
+  evaluatedElement = GG.SerializeElement(Z)
+
+  proof = GenerateProof(skS, G, pkS, R, Z)
+
+  return evaluatedElement, proof
+</pre><a href="#section-3.4.2.1-1" class="pilcrow">¶</a>
+</div>
+<p id="section-3.4.2.1-2">The helper functions <code>GenerateProof</code> and <code>ComputeComposites</code> are defined
+below.<a href="#section-3.4.2.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="generateproof">
+<section id="section-3.4.2.2">
+            <h5 id="name-generateproof">
+<a href="#section-3.4.2.2" class="section-number selfRef">3.4.2.2. </a><a href="#name-generateproof" class="section-name selfRef">GenerateProof</a>
+            </h5>
+<div class="artwork art-text alignLeft" id="section-3.4.2.2-1">
+<pre>
+Input:
+
+  Scalar k
+  Element A
+  Element B
+  Element C
+  Element D
+
+Output:
+
+  Proof proof
+
+def GenerateProof(k, A, B, C, D)
+  Cs = [C]
+  Ds = [D]
+  a = ComputeCompositesFast(k, B, Cs, Ds)
+
+  r = GG.RandomScalar()
+  M = a[0]
+  Z = a[1]
+  t2 = r * A
+  t3 = r * M
+
+  Bm = GG.SerializeElement(B)
+  a0 = GG.SerializeElement(M)
+  a1 = GG.SerializeElement(Z)
+  a2 = GG.SerializeElement(t2)
+  a3 = GG.SerializeElement(t3)
+
+  challengeDST = "Challenge-" || contextString
+  h2Input = I2OSP(len(Bm), 2) || Bm ||
+            I2OSP(len(a0), 2) || a0 ||
+            I2OSP(len(a1), 2) || a1 ||
+            I2OSP(len(a2), 2) || a2 ||
+            I2OSP(len(a3), 2) || a3 ||
+            I2OSP(len(challengeDST), 2) || challengeDST
+
+  c = GG.HashToScalar(h2Input)
+  s = (r - c * k) mod p
+  proof = [GG.SerializeScalar(c), GG.SerializeScalar(s)]
+
+  return proof
+</pre><a href="#section-3.4.2.2-1" class="pilcrow">¶</a>
+</div>
+<div id="batching-inputs">
+<section id="section-3.4.2.2.1">
+              <h6 id="name-batching-inputs">
+<a href="#section-3.4.2.2.1" class="section-number selfRef">3.4.2.2.1. </a><a href="#name-batching-inputs" class="section-name selfRef">Batching inputs</a>
+              </h6>
+<p id="section-3.4.2.2.1-1">Unlike other functions, <code>ComputeComposites</code> takes lists of inputs,
+rather than a single input. Applications can take advantage of this
+functionality by invoking <code>GenerateProof</code> on batches of inputs to
+produce a combined, constant-size proof. (In the pseudocode above,
+the single inputs <code>blindedElement</code> and <code>evaluatedElement</code> are passed as
+one-item lists to <code>ComputeComposites</code>.)<a href="#section-3.4.2.2.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.2.2.1-2">In particular, servers can produce a single, constant-sized proof for N
+client inputs sent in a single request, rather than one proof per client
+input. This optimization benefits clients and servers since it amortizes
+the cost of proof generation and bandwidth across multiple requests.<a href="#section-3.4.2.2.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="fresh-randomness">
+<section id="section-3.4.2.2.2">
+              <h6 id="name-fresh-randomness">
+<a href="#section-3.4.2.2.2" class="section-number selfRef">3.4.2.2.2. </a><a href="#name-fresh-randomness" class="section-name selfRef">Fresh Randomness</a>
+              </h6>
+<p id="section-3.4.2.2.2-1">We note here that it is essential that a different <code>r</code> value is used for
+every invocation. If this is not done, then this may leak <code>skS</code> as is
+possible in Schnorr or (EC)DSA scenarios where fresh randomness is not
+used.<a href="#section-3.4.2.2.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="computecomposites">
+<section id="section-3.4.2.3">
+            <h5 id="name-computecomposites">
+<a href="#section-3.4.2.3" class="section-number selfRef">3.4.2.3. </a><a href="#name-computecomposites" class="section-name selfRef">ComputeComposites</a>
+            </h5>
+<p id="section-3.4.2.3-1">The definition of <code>ComputeComposites</code> is given below. This function is
+used both on generation and verification of the proof.<a href="#section-3.4.2.3-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.2.3-2">
+<pre>
+Input:
+
+  Element B
+  Element Cs[m]
+  Element Ds[m]
+
+Output:
+
+  Element composites[2]
+
+def ComputeComposites(B, Cs, Ds):
+  Bm = GG.SerializeElement(B)
+  seedDST = "Seed-" || contextString
+  compositeDST = "Composite-" || contextString
+
+  h1Input = I2OSP(len(Bm), 2) || Bm ||
+            I2OSP(len(seedDST), 2) || seedDST
+  seed = Hash(h1Input)
+
+  M = GG.Identity()
+  Z = GG.Identity()
+  for i = 0 to m-1:
+    Ci = GG.SerializeElement(Cs[i])
+    Di = GG.SerializeElement(Ds[i])
+    h2Input = I2OSP(len(seed), 2) || seed || I2OSP(i, 2) ||
+              I2OSP(len(Ci), 2) || Ci ||
+              I2OSP(len(Di), 2) || Di ||
+              I2OSP(len(compositeDST), 2) || compositeDST
+    di = GG.HashToScalar(h2Input)
+    M = di * Cs[i] + M
+    Z = di * Ds[i] + Z
+
+ return [M, Z]
+</pre><a href="#section-3.4.2.3-2" class="pilcrow">¶</a>
+</div>
+<p id="section-3.4.2.3-3">If the private key is known, as is the case for the server, this function
+can be optimized as shown in <code>ComputeCompositesFast</code> below.<a href="#section-3.4.2.3-3" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.2.3-4">
+<pre>
+Input:
+
+  Scalar k
+  Element B
+  Element Cs[m]
+  Element Ds[m]
+
+Output:
+
+  Element composites[2]
+
+def ComputeCompositesFast(k, B, Cs, Ds):
+  Bm = GG.SerializeElement(B)
+  seedDST = "Seed-" || contextString
+  compositeDST = "Composite-" || contextString
+
+  h1Input = I2OSP(len(Bm), 2) || Bm ||
+            I2OSP(len(seedDST), 2) || seedDST
+  seed = Hash(h1Input)
+
+  M = GG.Identity()
+  for i = 0 to m-1:
+    Ci = GG.SerializeElement(Cs[i])
+    Di = GG.SerializeElement(Ds[i])
+    h2Input = I2OSP(len(seed), 2) || seed || I2OSP(i, 2) ||
+              I2OSP(len(Ci), 2) || Ci ||
+              I2OSP(len(Di), 2) || Di ||
+              I2OSP(len(compositeDST), 2) || compositeDST
+    di = GG.HashToScalar(h2Input)
+    M = di * Cs[i] + M
+
+  Z = k * M
+
+ return [M, Z]
+</pre><a href="#section-3.4.2.3-4" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="client-context">
+<section id="section-3.4.3">
+          <h4 id="name-client-context">
+<a href="#section-3.4.3" class="section-number selfRef">3.4.3. </a><a href="#name-client-context" class="section-name selfRef">Client Context</a>
+          </h4>
+<p id="section-3.4.3-1">The ClientContext encapsulates the context string constructed during
+setup. It has two functions, <code>Blind()</code> and <code>Finalize()</code>, as described
+below. It also has an internal function, <code>Unblind()</code>, which is used
+by <code>Finalize</code>. The implementation of these functions varies depending
+on the mode.<a href="#section-3.4.3-1" class="pilcrow">¶</a></p>
+<div id="blind">
+<section id="section-3.4.3.1">
+            <h5 id="name-blind">
+<a href="#section-3.4.3.1" class="section-number selfRef">3.4.3.1. </a><a href="#name-blind" class="section-name selfRef">Blind</a>
+            </h5>
+<p id="section-3.4.3.1-1">In this mode, blinding is done multiplicatively. Under certain application
+circumstances, the more optimal additive blinding mechanism described in
+<a href="#verifiable-blind" class="xref">Section 3.4.4.2</a> can be used. See <a href="#blind-considerations" class="xref">Section 7.5</a> for more
+details.<a href="#section-3.4.3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.3.1-2"><code>Blind</code> is implemented as follows.<a href="#section-3.4.3.1-2" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.3.1-3">
+<pre>
+Input:
+
+  ClientInput input
+
+Output:
+
+  Scalar blind
+  SerializedElement blindedElement
+
+def Blind(input):
+  blind = GG.RandomScalar()
+  P = GG.HashToGroup(input)
+  blindedElement = GG.SerializeElement(blind * P)
+
+  return blind, blindedElement
+</pre><a href="#section-3.4.3.1-3" class="pilcrow">¶</a>
+</div>
+<p id="section-3.4.3.1-4">The inverse <code>Unblind</code> is implemented as follows.<a href="#section-3.4.3.1-4" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.3.1-5">
+<pre>
+Input:
+
+  Scalar blind
+  SerializedElement evaluatedElement
+
+Output:
+
+  SerializedElement unblindedElement
+
+Errors: DeserializeError
+
+def Unblind(blind, evaluatedElement, ...):
+  Z = GG.DeserializeElement(evaluatedElement)
+  N = (blind^(-1)) * Z
+  unblindedElement = GG.SerializeElement(N)
+
+  return unblindedElement
+</pre><a href="#section-3.4.3.1-5" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="finalize">
+<section id="section-3.4.3.2">
+            <h5 id="name-finalize">
+<a href="#section-3.4.3.2" class="section-number selfRef">3.4.3.2. </a><a href="#name-finalize" class="section-name selfRef">Finalize</a>
+            </h5>
+<p id="section-3.4.3.2-1"><code>Finalize</code> depends on the internal <code>Unblind</code> function. In this mode, <code>Finalize</code>
+and does not include all inputs listed in <a href="#protocol-overview" class="xref">Section 3.1</a>. These additional
+inputs are only useful for the verifiable mode, described in <a href="#verifiable-finalize" class="xref">Section 3.4.4.3</a>.<a href="#section-3.4.3.2-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.3.2-2">
+<pre>
+Input:
+
+  ClientInput input
+  Scalar blind
+  SerializedElement evaluatedElement
+
+Output:
+
+  opaque output[Nh]
+
+def Finalize(input, blind, evaluatedElement):
+  unblindedElement = Unblind(blind, evaluatedElement)
+
+  finalizeDST = "Finalize-" || contextString
+  hashInput = I2OSP(len(input), 2) || input ||
+              I2OSP(len(unblindedElement), 2) || unblindedElement ||
+              I2OSP(len(finalizeDST), 2) || finalizeDST
+  return Hash(hashInput)
+</pre><a href="#section-3.4.3.2-2" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="verifiable-client">
+<section id="section-3.4.4">
+          <h4 id="name-verifiableclientcontext">
+<a href="#section-3.4.4" class="section-number selfRef">3.4.4. </a><a href="#name-verifiableclientcontext" class="section-name selfRef">VerifiableClientContext</a>
+          </h4>
+<p id="section-3.4.4-1">The VerifiableClientContext extends the base ClientContext with the
+desired server public key <code>pkS</code> with an augmented <code>Unblind()</code> function.
+This function verifies an evaluation proof using <code>pkS</code>. It makes use of
+the helper function <code>ComputeComposites</code> described above. It has one
+helper function, <code>VerifyProof()</code>, defined below.<a href="#section-3.4.4-1" class="pilcrow">¶</a></p>
+<div id="verifyproof">
+<section id="section-3.4.4.1">
+            <h5 id="name-verifyproof">
+<a href="#section-3.4.4.1" class="section-number selfRef">3.4.4.1. </a><a href="#name-verifyproof" class="section-name selfRef">VerifyProof</a>
+            </h5>
+<p id="section-3.4.4.1-1">This algorithm outputs a boolean <code>verified</code> which indicates whether the
+proof inside of the evaluation verifies correctly, or not.<a href="#section-3.4.4.1-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.4.1-2">
+<pre>
+Input:
+
+  Element A
+  Element B
+  Element C
+  Element D
+  Proof proof
+
+Output:
+
+  boolean verified
+
+def VerifyProof(A, B, C, D, proof):
+  Cs = [C]
+  Ds = [D]
+
+  a = ComputeComposites(B, Cs, Ds)
+  c = GG.DeserializeScalar(proof[0])
+  s = GG.DeserializeScalar(proof[1])
+
+  M = a[0]
+  Z = a[1]
+  t2 = ((s * A) + (c * B))
+  t3 = ((s * M) + (c * Z))
+
+  Bm = GG.SerializeElement(B)
+  a0 = GG.SerializeElement(M)
+  a1 = GG.SerializeElement(Z)
+  a2 = GG.SerializeElement(t2)
+  a3 = GG.SerializeElement(t3)
+
+  challengeDST = "Challenge-" || contextString
+  h2Input = I2OSP(len(Bm), 2) || Bm ||
+            I2OSP(len(a0), 2) || a0 ||
+            I2OSP(len(a1), 2) || a1 ||
+            I2OSP(len(a2), 2) || a2 ||
+            I2OSP(len(a3), 2) || a3 ||
+            I2OSP(len(challengeDST), 2) || challengeDST
+
+  expectedC  = GG.HashToScalar(h2Input)
+
+  return CT_EQUAL(expectedC, c)
+</pre><a href="#section-3.4.4.1-2" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="verifiable-blind">
+<section id="section-3.4.4.2">
+            <h5 id="name-verifiable-blind">
+<a href="#section-3.4.4.2" class="section-number selfRef">3.4.4.2. </a><a href="#name-verifiable-blind" class="section-name selfRef">Verifiable Blind</a>
+            </h5>
+<p id="section-3.4.4.2-1">In this mode, where the server public key is available for proof verification,
+blinding is done additively. This variant is named <code>VerifiableBlind</code> and
+<code>VerifiableUnblind</code>. It takes two inputs: the client input and a blinded
+version of the group generator. The latter is computed using a function called
+<code>VerifiablePreprocess</code>, also described below.<a href="#section-3.4.4.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.4.2-2"><code>VerifiableBlind</code> is implemented as follows.<a href="#section-3.4.4.2-2" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.4.2-3">
+<pre>
+Input:
+
+  ClientInput input
+  Element blindedGenerator
+
+Output:
+
+  SerializedElement blindedElement
+
+def VerifiableBlind(input, blindedGenerator):
+  P = GG.HashToGroup(input)
+  blindedElement = GG.SerializeElement(P + blindedGenerator)
+
+  return blindedElement
+</pre><a href="#section-3.4.4.2-3" class="pilcrow">¶</a>
+</div>
+<p id="section-3.4.4.2-4">The inverse <code>VerifiableUnblind</code> is implemented as follows. This function
+can raise an exception if element deserialization or proof verification
+fals.<a href="#section-3.4.4.2-4" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.4.2-5">
+<pre>
+Input:
+
+  Element blindedPublicKey
+  SerializedElement evaluatedElement
+  SerializedElement blindedElement
+  Element pkS
+  Scalar proof
+
+Output:
+
+  SerializedElement unblindedElement
+
+Errors: DeserializeError, VerifyError
+
+def VerifiableUnblind(blindedPublicKey, evaluatedElement, blindedElement, pkS, proof):
+  Z = GG.DeserializeElement(evaluatedElement)
+  R = GG.DeserializeElement(blindedElement)
+  if VerifyProof(G, pkS, R, Z, proof) == false:
+    raise VerifyError
+
+  N := Z - blindedPublicKey
+  unblindedElement = GG.SerializeElement(N)
+
+  return unblindedElement
+</pre><a href="#section-3.4.4.2-5" class="pilcrow">¶</a>
+</div>
+<p id="section-3.4.4.2-6">The internal <code>VerifiablePreprocess</code> function computes a blind and uses it to
+compute a corresponding blinded version of the group generator and server
+public key. This function can be used to pre-compute tables of values for
+future invocations of the protocol, or it can be computed only when needed
+for a single invocation of the protocol.<a href="#section-3.4.4.2-6" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-3.4.4.2-7">
+<pre>
+Input:
+
+  Element pkS
+
+Output:
+
+  Element blindedGenerator
+  Element blindedPublicKey
+  Scalar blind
+
+def Preprocess(pkS):
+  blind = GG.RandomScalar()
+  blindedGenerator = ScalarBaseMult(blind)
+  blindedPublicKey = pkS * blind
+
+  return blindedGenerator, blindedPublicKey, blind
+</pre><a href="#section-3.4.4.2-7" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="verifiable-finalize">
+<section id="section-3.4.4.3">
+            <h5 id="name-verifiable-finalize">
+<a href="#section-3.4.4.3" class="section-number selfRef">3.4.4.3. </a><a href="#name-verifiable-finalize" class="section-name selfRef">Verifiable Finalize</a>
+            </h5>
+<div class="artwork art-text alignLeft" id="section-3.4.4.3-1">
+<pre>
+Input:
+
+  ClientInput input
+  Element blindedPublicKey
+  SerializedElement evaluatedElement
+  SerializedElement blindedElement
+  Element pkS
+  Scalar proof
+
+Output:
+
+  opaque output[Nh]
+
+def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, proof):
+  unblindedElement = VerifiableUnblind(blindedPublicKey, evaluatedElement, blindedElement, pkS, proof)
+
+  finalizeDST = "Finalize-" || contextString
+  hashInput = I2OSP(len(input), 2) || input ||
+              I2OSP(len(unblindedElement), 2) || unblindedElement ||
+              I2OSP(len(finalizeDST), 2) || finalizeDST
+  return Hash(hashInput)
+</pre><a href="#section-3.4.4.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="domain-separation">
+<section id="section-4">
+      <h2 id="name-domain-separation">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-domain-separation" class="section-name selfRef">Domain Separation</a>
+      </h2>
+<p id="section-4-1">Applications SHOULD construct input to the protocol to provide domain
+separation. Any system which has multiple (V)OPRF applications should
+distinguish client inputs to ensure the OPRF results are separate.
+Guidance for constructing info can be found in
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>; Section 3.1.<a href="#section-4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ciphersuites">
+<section id="section-5">
+      <h2 id="name-ciphersuites">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-ciphersuites" class="section-name selfRef">Ciphersuites</a>
+      </h2>
+<p id="section-5-1">A ciphersuite (also referred to as 'suite' in this document) for the protocol
+wraps the functionality required for the protocol to take place. This
+ciphersuite should be available to both the client and server, and agreement
+on the specific instantiation is assumed throughout. A ciphersuite contains
+instantiations of the following functionalities:<a href="#section-5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-2.1">
+          <code>GG</code>: A prime-order group exposing the API detailed in <a href="#pog" class="xref">Section 2.1</a>, with base
+point defined in the corresponding reference for each group. Each group also
+specifies HashToGroup, HashToScalar, and serialization functionalities. For
+HashToGroup, the domain separation tag (DST) is constructed in accordance
+with the recommendations in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>, Section 3.1.
+For HashToScalar, each group specifies an integer order that is used in
+reducing integer values to a member of the corresponding scalar field.<a href="#section-5-2.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-5-2.2">
+          <code>Hash</code>: A cryptographic hash function that is indifferentiable from a
+Random Oracle, whose output length is Nh bytes long.<a href="#section-5-2.2" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-5-3">This section specifies ciphersuites with supported groups and hash functions.
+For each ciphersuite, contextString is that which is computed in the Setup
+functions.<a href="#section-5-3" class="pilcrow">¶</a></p>
+<p id="section-5-4">Applications should take caution in using ciphersuites targeting P-256
+and ristretto255. See <a href="#cryptanalysis" class="xref">Section 7.2</a> for related discussion.<a href="#section-5-4" class="pilcrow">¶</a></p>
+<div id="oprfristretto255-sha-512">
+<section id="section-5.1">
+        <h3 id="name-oprfristretto255-sha-512">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-oprfristretto255-sha-512" class="section-name selfRef">OPRF(ristretto255, SHA-512)</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.1-1.1">
+            <p id="section-5.1-1.1.1">Group: ristretto255 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span><a href="#section-5.1-1.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.1-1.1.2.1">HashToGroup(): Use hash_to_ristretto255
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> with DST =
+"HashToGroup-" || contextString, and <code>expand_message</code> = <code>expand_message_xmd</code>
+using SHA-512.<a href="#section-5.1-1.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.1-1.1.2.2">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xmd</code>,
+DST = "HashToScalar-" || contextString, and output length 64, interpret
+<code>uniform_bytes</code> as a 512-bit integer in little-endian order, and reduce the integer
+modulo <code>Order()</code>.<a href="#section-5.1-1.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.1-1.1.2.3">Serialization: Both group elements and scalars are encoded in Ne = Ns = 32
+bytes. For group elements, use the 'Encode' and 'Decode' functions from
+<span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo <code>Order()</code>
+and in little-endian order.<a href="#section-5.1-1.1.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-5.1-1.2">Hash: SHA-512, and Nh = 64.<a href="#section-5.1-1.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-5.1-1.3">ID: 0x0001<a href="#section-5.1-1.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="oprfdecaf448-shake-256">
+<section id="section-5.2">
+        <h3 id="name-oprfdecaf448-shake-256">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-oprfdecaf448-shake-256" class="section-name selfRef">OPRF(decaf448, SHAKE-256)</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.2-1.1">
+            <p id="section-5.2-1.1.1">Group: decaf448 <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span><a href="#section-5.2-1.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.2-1.1.2.1">HashToGroup(): Use hash_to_decaf448
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> with DST =
+"HashToGroup-" || contextString, and <code>expand_message</code> = <code>expand_message_xof</code>
+using SHAKE-256.<a href="#section-5.2-1.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.2-1.1.2.2">HashToScalar(): Compute <code>uniform_bytes</code> using <code>expand_message</code> = <code>expand_message_xof</code>,
+DST = "HashToScalar-" || contextString, and output length 64, interpret
+<code>uniform_bytes</code> as a 512-bit integer in little-endian order, and reduce the integer
+modulo <code>Order()</code>.<a href="#section-5.2-1.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.2-1.1.2.3">Serialization: Both group elements and scalars are encoded in Ne = Ns = 56
+bytes. For group elements, use the 'Encode' and 'Decode' functions from
+<span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>. For scalars, ensure they are fully reduced modulo <code>Order()</code>
+and in little-endian order.<a href="#section-5.2-1.1.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-5.2-1.2">Hash: SHAKE-256, and Nh = 64.<a href="#section-5.2-1.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-5.2-1.3">ID: 0x0002<a href="#section-5.2-1.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="oprfp-256-sha-256">
+<section id="section-5.3">
+        <h3 id="name-oprfp-256-sha-256">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-oprfp-256-sha-256" class="section-name selfRef">OPRF(P-256, SHA-256)</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.3-1.1">
+            <p id="section-5.3-1.1.1">Group: P-256 (secp256r1) <span>[<a href="#x9.62" class="xref">x9.62</a>]</span><a href="#section-5.3-1.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.3-1.1.2.1">HashToGroup(): Use hash_to_curve with suite P256_XMD:SHA-256_SSWU_RO_
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> and DST =
+"HashToGroup-" || contextString.<a href="#section-5.3-1.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.3-1.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
+using L = 48, <code>expand_message_xmd</code> with SHA-256,
+DST = "HashToScalar-" || contextString, and
+prime modulus equal to <code>Order()</code>.<a href="#section-5.3-1.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.3-1.1.2.3">Serialization: Elements are serialized as Ne = 33 byte strings using
+compressed point encoding for the curve <span>[<a href="#SEC1" class="xref">SEC1</a>]</span>. Scalars are serialized as
+Ns = 32 byte strings by fully reducing the value modulo <code>Order()</code> and in big-endian
+order.<a href="#section-5.3-1.1.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-5.3-1.2">Hash: SHA-256, and Nh = 32.<a href="#section-5.3-1.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-5.3-1.3">ID: 0x0003<a href="#section-5.3-1.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="oprfp-384-sha-512">
+<section id="section-5.4">
+        <h3 id="name-oprfp-384-sha-512">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-oprfp-384-sha-512" class="section-name selfRef">OPRF(P-384, SHA-512)</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.4-1.1">
+            <p id="section-5.4-1.1.1">Group: P-384 (secp384r1) <span>[<a href="#x9.62" class="xref">x9.62</a>]</span><a href="#section-5.4-1.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.4-1.1.2.1">HashToGroup(): Use hash_to_curve with suite P384_XMD:SHA-512_SSWU_RO_
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> and DST =
+"HashToGroup-" || contextString.<a href="#section-5.4-1.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.4-1.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
+using L = 72, <code>expand_message_xmd</code> with SHA-512,
+DST = "HashToScalar-" || contextString, and
+prime modulus equal to <code>Order()</code>.<a href="#section-5.4-1.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.4-1.1.2.3">Serialization: Elements are serialized as Ne = 49 byte strings using
+compressed point encoding for the curve <span>[<a href="#SEC1" class="xref">SEC1</a>]</span>. Scalars are serialized as
+Ns = 48 byte strings by fully reducing the value modulo <code>Order()</code> and in big-endian
+order.<a href="#section-5.4-1.1.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-5.4-1.2">Hash: SHA-512, and Nh = 64.<a href="#section-5.4-1.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-5.4-1.3">ID: 0x0004<a href="#section-5.4-1.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="oprfp-521-sha-512">
+<section id="section-5.5">
+        <h3 id="name-oprfp-521-sha-512">
+<a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-oprfp-521-sha-512" class="section-name selfRef">OPRF(P-521, SHA-512)</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.5-1.1">
+            <p id="section-5.5-1.1.1">Group: P-521 (secp521r1) <span>[<a href="#x9.62" class="xref">x9.62</a>]</span><a href="#section-5.5-1.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.5-1.1.2.1">HashToGroup(): Use hash_to_curve with suite P521_XMD:SHA-512_SSWU_RO_
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> and DST =
+"HashToGroup-" || contextString.<a href="#section-5.5-1.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.5-1.1.2.2">HashToScalar(): Use hash_to_field from <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>
+using L = 98, <code>expand_message_xmd</code> with SHA-512,
+DST = "HashToScalar-" || contextString, and
+prime modulus equal to <code>Order()</code>.<a href="#section-5.5-1.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-5.5-1.1.2.3">Serialization: Elements are serialized as Ne = 67 byte strings using
+compressed point encoding for the curve <span>[<a href="#SEC1" class="xref">SEC1</a>]</span>. Scalars are serialized as
+Ns = 66 byte strings by fully reducing the value modulo <code>Order()</code> and in big-endian
+order.<a href="#section-5.5-1.1.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-5.5-1.2">Hash: SHA-512, and Nh = 64.<a href="#section-5.5-1.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-5.5-1.3">ID: 0x0005<a href="#section-5.5-1.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="apis">
+<section id="section-6">
+      <h2 id="name-api-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-api-considerations" class="section-name selfRef">API Considerations</a>
+      </h2>
+<p id="section-6-1">Some VOPRF APIs specified in this document are fallible. For example, <code>Finalize()</code>
+and <code>Evaluate</code> can fail any element received from the peer fails deserialization.
+The explicit errors generated throughout this specification, along with the
+conditions that lead to each error, are as follows:<a href="#section-6-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6-2.1">
+          <code>VerifyError</code>: VOPRF proof verification failed; <a href="#verifiable-blind" class="xref">Section 3.4.4.2</a>.<a href="#section-6-2.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-6-2.2">
+          <code>DeserializeError</code>: Public element or secret scalar deserialization failure; <a href="#pog" class="xref">Section 2.1</a>.<a href="#section-6-2.2" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-6-3">The errors in this document are meant as a guide to implementors. They are not
+an exhaustive list of all the errors an implementation might emit. For example,
+implementations might run out of memory and return a corresponding error.<a href="#section-6-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec">
+<section id="section-7">
+      <h2 id="name-security-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-7-1">This section discusses the cryptographic security of our protocol, along
+with some suggestions and trade-offs that arise from the implementation
+of an OPRF.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<div id="properties">
+<section id="section-7.1">
+        <h3 id="name-security-properties">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-security-properties" class="section-name selfRef">Security Properties</a>
+        </h3>
+<p id="section-7.1-1">The security properties of an OPRF protocol with functionality y = F(k,
+x) include those of a standard PRF. Specifically:<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1-2.1">Pseudorandomness: F is pseudorandom if the output y = F(k,x) on any
+input x is indistinguishable from uniformly sampling any element in
+F's range, for a random sampling of k.<a href="#section-7.1-2.1" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-7.1-3">In other words, consider an adversary that picks inputs x from the
+domain of F and evaluates F on (k,x) (without knowledge of randomly
+sampled k). Then the output distribution F(k,x) is indistinguishable
+from the output distribution of a randomly chosen function with the same
+domain and range.<a href="#section-7.1-3" class="pilcrow">¶</a></p>
+<p id="section-7.1-4">A consequence of showing that a function is pseudorandom, is that it is
+necessarily non-malleable (i.e. we cannot compute a new evaluation of F
+from an existing evaluation). A genuinely random function will be
+non-malleable with high probability, and so a pseudorandom function must
+be non-malleable to maintain indistinguishability.<a href="#section-7.1-4" class="pilcrow">¶</a></p>
+<p id="section-7.1-5">An OPRF protocol must also satisfy the following property:<a href="#section-7.1-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1-6.1">Oblivious: The server must learn nothing about the client's input or
+the output of the function. In addition, the client must learn nothing
+about the server's private key.<a href="#section-7.1-6.1" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-7.1-7">Essentially, obliviousness tells us that, even if the server learns the
+client's input x at some point in the future, then the server will not
+be able to link any particular OPRF evaluation to x. This property is
+also known as unlinkability <span>[<a href="#DGSTV18" class="xref">DGSTV18</a>]</span>.<a href="#section-7.1-7" class="pilcrow">¶</a></p>
+<p id="section-7.1-8">Optionally, for any protocol that satisfies the above properties, there
+is an additional security property:<a href="#section-7.1-8" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1-9.1">Verifiable: The client must only complete execution of the protocol if
+it can successfully assert that the OPRF output it computes is
+correct. This is taken with respect to the OPRF key held by the
+server.<a href="#section-7.1-9.1" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-7.1-10">Any OPRF that satisfies the 'verifiable' security property is known as a
+verifiable OPRF, or VOPRF for short. In practice, the notion of
+verifiability requires that the server commits to the key before the
+actual protocol execution takes place. Then the client verifies that the
+server has used the key in the protocol using this commitment. In the
+following, we may also refer to this commitment as a public key.<a href="#section-7.1-10" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="cryptanalysis">
+<section id="section-7.2">
+        <h3 id="name-cryptographic-security">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-cryptographic-security" class="section-name selfRef">Cryptographic Security</a>
+        </h3>
+<p id="section-7.2-1">Below, we discuss the cryptographic security of the (V)OPRF protocol
+from <a href="#protocol" class="xref">Section 3</a>, relative to the necessary cryptographic assumptions
+that need to be made.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<div id="assumptions">
+<section id="section-7.2.1">
+          <h4 id="name-computational-hardness-assu">
+<a href="#section-7.2.1" class="section-number selfRef">7.2.1. </a><a href="#name-computational-hardness-assu" class="section-name selfRef">Computational Hardness Assumptions</a>
+          </h4>
+<p id="section-7.2.1-1">Each assumption states that the problems specified below are
+computationally difficult to solve in relation to a particular choice of
+security parameter <code>sp</code>.<a href="#section-7.2.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.2.1-2">Let GG = GG(sp) be a group with prime-order p, and let GF(p) be a finite
+field of order p.<a href="#section-7.2.1-2" class="pilcrow">¶</a></p>
+<div id="dl">
+<section id="section-7.2.1.1">
+            <h5 id="name-discrete-log-dl-problem">
+<a href="#section-7.2.1.1" class="section-number selfRef">7.2.1.1. </a><a href="#name-discrete-log-dl-problem" class="section-name selfRef">Discrete-log (DL) Problem</a>
+            </h5>
+<p id="section-7.2.1.1-1">Given G, a generator of GG, and H = hG for some h in GF(p); output h.<a href="#section-7.2.1.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ddh">
+<section id="section-7.2.1.2">
+            <h5 id="name-decisional-diffie-hellman-d">
+<a href="#section-7.2.1.2" class="section-number selfRef">7.2.1.2. </a><a href="#name-decisional-diffie-hellman-d" class="section-name selfRef">Decisional Diffie-Hellman (DDH) Problem</a>
+            </h5>
+<p id="section-7.2.1.2-1">Sample uniformly at random d in {0,1}. Given (G, aG, bG, C), where<a href="#section-7.2.1.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.2.1.2-2.1">G is a generator of GG;<a href="#section-7.2.1.2-2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-7.2.1.2-2.2">a,b are elements of GF(p);<a href="#section-7.2.1.2-2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-7.2.1.2-2.3">if d == 0: C = abG; else: C is sampled uniformly at random from GG.<a href="#section-7.2.1.2-2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+<p id="section-7.2.1.2-3">Output d' == d.<a href="#section-7.2.1.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="protocol-sec">
+<section id="section-7.2.2">
+          <h4 id="name-protocol-security">
+<a href="#section-7.2.2" class="section-number selfRef">7.2.2. </a><a href="#name-protocol-security" class="section-name selfRef">Protocol Security</a>
+          </h4>
+<p id="section-7.2.2-1">Our OPRF construction is based on the VOPRF construction known as
+2HashDH-NIZK given by <span>[<a href="#JKK14" class="xref">JKK14</a>]</span>; essentially without providing
+zero-knowledge proofs that verify that the output is correct. Our VOPRF
+construction is identical to the <span>[<a href="#JKK14" class="xref">JKK14</a>]</span> construction, except that we
+can optionally perform multiple VOPRF evaluations in one go, whilst only
+constructing one NIZK proof object. This is enabled using an established
+batching technique.<a href="#section-7.2.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2.2-2">Consequently, the cryptographic security of our construction is based on
+the assumption that the One-More Gap DH is computationally difficult to
+solve.<a href="#section-7.2.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.2.2-3">The (N,Q)-One-More Gap DH (OMDH) problem asks the following.<a href="#section-7.2.2-3" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-7.2.2-4">
+<pre>
+    Given:
+    - G, k * G, and (G_1, ... , G_N), all elements of GG;
+    - oracle access to an OPRF functionality using the key k;
+    - oracle access to DDH solvers.
+
+    Find Q+1 pairs of the form below:
+
+    (G_{j_s}, k * G_{j_s})
+
+    where the following conditions hold:
+      - s is a number between 1 and Q+1;
+      - j_s is a number between 1 and N for each s;
+      - Q is the number of allowed queries.
+</pre><a href="#section-7.2.2-4" class="pilcrow">¶</a>
+</div>
+<p id="section-7.2.2-5">The original paper <span>[<a href="#JKK14" class="xref">JKK14</a>]</span> gives a security proof that the
+2HashDH-NIZK construction satisfies the security guarantees of a VOPRF
+protocol <a href="#properties" class="xref">Section 7.1</a> under the OMDH assumption in the universal
+composability (UC) security model.<a href="#section-7.2.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="qsdh">
+<section id="section-7.2.3">
+          <h4 id="name-q-strong-dh-oracle">
+<a href="#section-7.2.3" class="section-number selfRef">7.2.3. </a><a href="#name-q-strong-dh-oracle" class="section-name selfRef">Q-Strong-DH Oracle</a>
+          </h4>
+<p id="section-7.2.3-1">A side-effect of our OPRF design is that it allows instantiation of a
+oracle for constructing Q-strong-DH (Q-sDH) samples. The Q-Strong-DH
+problem asks the following.<a href="#section-7.2.3-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-7.2.3-2">
+<pre>
+    Given G1, G2, h*G2, (h^2)*G2, ..., (h^Q)*G2; for G1 and G2
+    generators of GG.
+
+    Output ( (1/(k+c))*G1, c ) where c is an element of GF(p)
+</pre><a href="#section-7.2.3-2" class="pilcrow">¶</a>
+</div>
+<p id="section-7.2.3-3">The assumption that this problem is hard was first introduced in
+<span>[<a href="#BB04" class="xref">BB04</a>]</span>. Since then, there have been a number of cryptanalytic studies
+that have reduced the security of the assumption below that implied by
+the group instantiation (for example, <span>[<a href="#BG04" class="xref">BG04</a>]</span> and <span>[<a href="#Cheon06" class="xref">Cheon06</a>]</span>). In
+summary, the attacks reduce the security of the group instantiation by
+log_2(Q) bits.<a href="#section-7.2.3-3" class="pilcrow">¶</a></p>
+<p id="section-7.2.3-4">As an example, suppose that a group instantiation is used that provides
+128 bits of security against discrete log cryptanalysis. Then an
+adversary with access to a Q-sDH oracle and makes Q=2^20 queries can
+reduce the security of the instantiation by log_2(2^20) = 20 bits.<a href="#section-7.2.3-4" class="pilcrow">¶</a></p>
+<p id="section-7.2.3-5">Notice that it is easy to instantiate a Q-sDH oracle using the OPRF
+functionality that we provide. A client can just submit sequential
+queries of the form (G, k * G, (k^2)G, ..., (k^(Q-1))G), where each
+query is the output of the previous interaction. This means that any
+client that submits Q queries to the OPRF can use the aforementioned
+attacks to reduce the security of the group instantiation by log_2(Q) bits.<a href="#section-7.2.3-5" class="pilcrow">¶</a></p>
+<p id="section-7.2.3-6">Recall that from a malicious client's perspective, the adversary wins if
+they can distinguish the OPRF interaction from a protocol that computes
+the ideal functionality provided by the PRF.<a href="#section-7.2.3-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="implications-for-ciphersuite-choices">
+<section id="section-7.2.4">
+          <h4 id="name-implications-for-ciphersuit">
+<a href="#section-7.2.4" class="section-number selfRef">7.2.4. </a><a href="#name-implications-for-ciphersuit" class="section-name selfRef">Implications for Ciphersuite Choices</a>
+          </h4>
+<p id="section-7.2.4-1">The OPRF instantiations that we recommend in this document are informed
+by the cryptanalytic discussion above. In particular, choosing elliptic
+curves configurations that describe 128-bit group instantiations would
+appear to in fact instantiate an OPRF with 128-log_2(Q) bits of
+security.<a href="#section-7.2.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.2.4-2">In most cases, it would require an informed and persistent attacker to
+launch a highly expensive attack to reduce security to anything much
+below 100 bits of security. We see this possibility as something that
+may result in problems in the future. For applications that cannot
+tolerate discrete logarithm security of lower than 128 bits, we
+recommend only implementing ciphersuites with IDs: 0x0002, 0x0004, and
+0x0005.<a href="#section-7.2.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="input-validation">
+<section id="section-7.3">
+        <h3 id="name-element-and-scalar-validati">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-element-and-scalar-validati" class="section-name selfRef">Element and Scalar Validation</a>
+        </h3>
+<p id="section-7.3-1">The DeserializeElement function converts an arbitrary byte array to a
+group element. This function validates that the element is a proper member
+of the group and is not the identity element, and returns an error if either
+condition is not met.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3-2">For P-256, P-384, and P-521 ciphersuites, this function performs partial
+public-key validation as defined in Section 5.6.2.3.4 of <span>[<a href="#keyagreement" class="xref">keyagreement</a>]</span>.
+This includes checking that the coordinates are in the correct range, that
+the point is on the curve, and that the point is not the point at infinity.
+If these checks fail, deserialization returns an error.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
+<p id="section-7.3-3">For ristretto255 and decaf448, elements are deserialized by invoking the Decode
+function from <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>], <a href="https://tools.ietf.org/html/draft-irtf-cfrg-ristretto255-decaf448-00#section-4.3.1" class="relref">Section 4.3.1</a></span> and <span>[<a href="#RISTRETTO" class="xref">RISTRETTO</a>]</span>, respectively,
+which returns false if the element is invalid. If this function returns false,
+deserialization returns an error.<a href="#section-7.3-3" class="pilcrow">¶</a></p>
+<p id="section-7.3-4">The DeserializeScalar function converts an arbitrary byte array to a scalar
+field element. Like DeserializeElement, this function validates that the element
+is a member of the scalar field and returns an error if this condition is not met.<a href="#section-7.3-4" class="pilcrow">¶</a></p>
+<p id="section-7.3-5">For P-256, P-384, and P-521 ciphersuites, this function ensures that the input,
+when treated as a big-endian integer, is a value between 0 and <code>Order()</code>. For
+ristretto255 and decaf448, this function ensures that the input, when treated as
+a little-endian integer, is a valud between 0 and <code>Order()</code>.<a href="#section-7.3-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="hashing-to-group">
+<section id="section-7.4">
+        <h3 id="name-hashing-to-group">
+<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-hashing-to-group" class="section-name selfRef">Hashing to Group</a>
+        </h3>
+<p id="section-7.4-1">A critical requirement of implementing the prime-order group using
+elliptic curves is a method to instantiate the function
+<code>GG.HashToGroup</code>, that maps inputs to group elements. In the elliptic
+curve setting, this deterministically maps inputs x (as byte arrays) to
+uniformly chosen points on the curve.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.4-2">In the security proof of the construction Hash is modeled as a random
+oracle. This implies that any instantiation of <code>GG.HashToGroup</code> must be
+pre-image and collision resistant. In <a href="#ciphersuites" class="xref">Section 5</a> we give
+instantiations of this functionality based on the functions described in
+<span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>. Consequently, any OPRF implementation
+must adhere to the implementation and security considerations discussed
+in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> when instantiating the function.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="blind-considerations">
+<section id="section-7.5">
+        <h3 id="name-blinding-considerations">
+<a href="#section-7.5" class="section-number selfRef">7.5. </a><a href="#name-blinding-considerations" class="section-name selfRef">Blinding Considerations</a>
+        </h3>
+<p id="section-7.5-1">This document makes use of two types of blinding variants: multiplicative and
+additive. The advantage of additive blinding is that it allows the client to
+pre-process tables of blinded scalar multiplications for the group generator
+and server public key. This can provide a computational efficiency advantage
+(due to the fact that a fixed-base multiplication can be calculated faster than
+a variable-base multiplication). Pre-processing also reduces the amount of
+computation that needs to be done in the online exchange.<a href="#section-7.5-1" class="pilcrow">¶</a></p>
+<p id="section-7.5-2">However, the choice of blinding mechanism has security implications. <span>[<a href="#JKX21" class="xref">JKX21</a>]</span>
+analyze the security properties of both blinding mechanisms used in this
+document. The results can be summarized as follows:<a href="#section-7.5-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.5-3.1">Multiplicative blinding is safe for all applications.<a href="#section-7.5-3.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-7.5-3.2">
+            <p id="section-7.5-3.2.1">Additive blinding is possibly unsafe, unless one of the following conditions
+are met:<a href="#section-7.5-3.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.5-3.2.2.1">The client has a certified copy of the server public key (as is the case
+in the verifiable mode);<a href="#section-7.5-3.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-7.5-3.2.2.2">The client input has high entropy; and<a href="#section-7.5-3.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-7.5-3.2.2.3">The client mixes the public key into the OPRF evaluation.<a href="#section-7.5-3.2.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+        </ul>
+<p id="section-7.5-4">To avoid security issues with the base mode, where some of the above conditions
+may not be met, this specification RECOMMENDS use of multiplicative blinding.
+This is because it is not known if the server public key is available or if the
+client input has high entropy. Applications wherein either of these conditions
+are true MAY use additive blinding.<a href="#section-7.5-4" class="pilcrow">¶</a></p>
+<p id="section-7.5-5">The verifiable mode always makes use of the more efficient additive blinding variant,
+as the public key is always available for verifying the proof.<a href="#section-7.5-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="timing-leaks">
+<section id="section-7.6">
+        <h3 id="name-timing-leaks">
+<a href="#section-7.6" class="section-number selfRef">7.6. </a><a href="#name-timing-leaks" class="section-name selfRef">Timing Leaks</a>
+        </h3>
+<p id="section-7.6-1">To ensure no information is leaked during protocol execution, all
+operations that use secret data MUST run in constant time. Operations that
+SHOULD run in constant time include all prime-order group operations and
+proof-specific operations (<code>GenerateProof()</code> and <code>VerifyProof()</code>).<a href="#section-7.6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="key-rotation">
+<section id="section-7.7">
+        <h3 id="name-key-rotation">
+<a href="#section-7.7" class="section-number selfRef">7.7. </a><a href="#name-key-rotation" class="section-name selfRef">Key Rotation</a>
+        </h3>
+<p id="section-7.7-1">Since the server's key is critical to security, the longer it is exposed
+by performing (V)OPRF operations on client inputs, the longer it is
+possible that the key can be compromised. For example, if the key is kept
+in circulation for a long period of time, then it also allows the
+clients to make enough queries to launch more powerful variants of the
+Q-sDH attacks from <a href="#qsdh" class="xref">Section 7.2.3</a>.<a href="#section-7.7-1" class="pilcrow">¶</a></p>
+<p id="section-7.7-2">To combat attacks of this nature, regular key rotation should be
+employed on the server-side. A suitable key-cycle for a key used to
+compute (V)OPRF evaluations would be between one week and six months.<a href="#section-7.7-2" class="pilcrow">¶</a></p>
+<div id="parameter-commitments">
+<section id="section-7.7.1">
+          <h4 id="name-parameter-commitments">
+<a href="#section-7.7.1" class="section-number selfRef">7.7.1. </a><a href="#name-parameter-commitments" class="section-name selfRef">Parameter Commitments</a>
+          </h4>
+<p id="section-7.7.1-1">For some applications, it may be desirable for the server to bind tokens to
+certain parameters, e.g., protocol versions, ciphersuites, etc. To
+accomplish this, the server should use a distinct scalar for each parameter
+combination. Upon redemption of a token T from the client, the server can
+later verify that T was generated using the scalar associated with the
+corresponding parameters.<a href="#section-7.7.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="acknowledgements">
+<section id="section-8">
+      <h2 id="name-acknowledgements">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-acknowledgements" class="section-name selfRef">Acknowledgements</a>
+      </h2>
+<p id="section-8-1">This document resulted from the work of the Privacy Pass team
+<span>[<a href="#PrivacyPass" class="xref">PrivacyPass</a>]</span>. The authors would also like to acknowledge helpful
+conversations with Hugo Krawczyk. Eli-Shaoul Khedouri provided
+additional review and comments on key consistency. Daniel Bourdrez,
+Tatiana Bradley, Sofia Celi, Frank Denis, and Bas Westerbaan also
+provided helpful input and contributions to the document.<a href="#section-8-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<section id="section-9">
+      <h2 id="name-references">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<section id="section-9.1">
+        <h3 id="name-normative-references">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="BB04">[BB04]</dt>
+        <dd>
+<span class="refTitle">"Short Signatures Without Random Oracles"</span>, <span>&lt;<a href="http://ai.stanford.edu/~xb/eurocrypt04a/bbsigs.pdf">http://ai.stanford.edu/~xb/eurocrypt04a/bbsigs.pdf</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="BG04">[BG04]</dt>
+        <dd>
+<span class="refTitle">"The Static Diffie-Hellman Problem"</span>, <span>&lt;<a href="https://eprint.iacr.org/2004/306">https://eprint.iacr.org/2004/306</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="Cheon06">[Cheon06]</dt>
+        <dd>
+<span class="refTitle">"Security Analysis of the Strong Diffie-Hellman Problem"</span>, <span>&lt;<a href="https://www.iacr.org/archive/eurocrypt2006/40040001/40040001.pdf">https://www.iacr.org/archive/eurocrypt2006/40040001/40040001.pdf</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="DGSTV18">[DGSTV18]</dt>
+        <dd>
+<span class="refTitle">"Privacy Pass, Bypassing Internet Challenges Anonymously"</span>, <span>&lt;<a href="https://www.degruyter.com/view/j/popets.2018.2018.issue-3/popets-2018-0026/popets-2018-0026.xml">https://www.degruyter.com/view/j/popets.2018.2018.issue-3/popets-2018-0026/popets-2018-0026.xml</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.davidson-pp-protocol">[I-D.davidson-pp-protocol]</dt>
+        <dd>
+<span class="refAuthor">Davidson, A.</span>, <span class="refTitle">"Privacy Pass: The Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-davidson-pp-protocol-01</span>, <time datetime="2020-07-13" class="refDate">13 July 2020</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-davidson-pp-protocol-01.txt">https://datatracker.ietf.org/doc/html/draft-davidson-pp-protocol-01.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.irtf-cfrg-hash-to-curve">[I-D.irtf-cfrg-hash-to-curve]</dt>
+        <dd>
+<span class="refAuthor">Faz-Hernandez, A.</span>, <span class="refAuthor">Scott, S.</span>, <span class="refAuthor">Sullivan, N.</span>, <span class="refAuthor">Wahby, R. S.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Hashing to Elliptic Curves"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-hash-to-curve-11</span>, <time datetime="2021-04-13" class="refDate">13 April 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11.txt">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.irtf-cfrg-opaque">[I-D.irtf-cfrg-opaque]</dt>
+        <dd>
+<span class="refAuthor">Krawczyk, H.</span>, <span class="refAuthor">Bourdrez, D.</span>, <span class="refAuthor">Lewi, K.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"The OPAQUE Asymmetric PAKE Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-opaque-05</span>, <time datetime="2021-06-07" class="refDate">7 June 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05.txt">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="JKK14">[JKK14]</dt>
+        <dd>
+<span class="refTitle">"Round-Optimal Password-Protected Secret Sharing and T-PAKE in the Password-Only model"</span>, <span>&lt;<a href="https://eprint.iacr.org/2014/650">https://eprint.iacr.org/2014/650</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="JKKX16">[JKKX16]</dt>
+        <dd>
+<span class="refTitle">"Highly-Efficient and Composable Password-Protected Secret Sharing (Or, How to Protect Your Bitcoin Wallet Online)"</span>, <span>&lt;<a href="https://eprint.iacr.org/2016/144">https://eprint.iacr.org/2016/144</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="PrivacyPass">[PrivacyPass]</dt>
+        <dd>
+<span class="refTitle">"Privacy Pass"</span>, <span>&lt;<a href="https://github.com/privacypass/challenge-bypass-server">https://github.com/privacypass/challenge-bypass-server</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/rfc2119">https://datatracker.ietf.org/doc/html/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7748">[RFC7748]</dt>
+        <dd>
+<span class="refAuthor">Langley, A.</span>, <span class="refAuthor">Hamburg, M.</span>, and <span class="refAuthor">S. Turner</span>, <span class="refTitle">"Elliptic Curves for Security"</span>, <span class="seriesInfo">RFC 7748</span>, <span class="seriesInfo">DOI 10.17487/RFC7748</span>, <time datetime="2016-01" class="refDate">January 2016</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/rfc7748">https://datatracker.ietf.org/doc/html/rfc7748</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8017">[RFC8017]</dt>
+        <dd>
+<span class="refAuthor">Moriarty, K., Ed.</span>, <span class="refAuthor">Kaliski, B.</span>, <span class="refAuthor">Jonsson, J.</span>, and <span class="refAuthor">A. Rusch</span>, <span class="refTitle">"PKCS #1: RSA Cryptography Specifications Version 2.2"</span>, <span class="seriesInfo">RFC 8017</span>, <span class="seriesInfo">DOI 10.17487/RFC8017</span>, <time datetime="2016-11" class="refDate">November 2016</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/rfc8017">https://datatracker.ietf.org/doc/html/rfc8017</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/rfc8174">https://datatracker.ietf.org/doc/html/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RISTRETTO">[RISTRETTO]</dt>
+        <dd>
+<span class="refAuthor">Valence, H. D.</span>, <span class="refAuthor">Grigg, J.</span>, <span class="refAuthor">Tankersley, G.</span>, <span class="refAuthor">Valsorda, F.</span>, <span class="refAuthor">Lovecruft, I.</span>, and <span class="refAuthor">M. Hamburg</span>, <span class="refTitle">"The ristretto255 and decaf448 Groups"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-ristretto255-decaf448-00</span>, <time datetime="2020-10-05" class="refDate">5 October 2020</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-00.txt">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ristretto255-decaf448-00.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SEC1">[SEC1]</dt>
+        <dd>
+<span class="refAuthor">Standards for Efficient Cryptography Group (SECG), .</span>, <span class="refTitle">"SEC 1: Elliptic Curve Cryptography"</span>, <span>&lt;<a href="https://www.secg.org/sec1-v2.pdf">https://www.secg.org/sec1-v2.pdf</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SEC2">[SEC2]</dt>
+        <dd>
+<span class="refAuthor">Standards for Efficient Cryptography Group (SECG), .</span>, <span class="refTitle">"SEC 2: Recommended Elliptic Curve Domain Parameters"</span>, <span>&lt;<a href="http://www.secg.org/sec2-v2.pdf">http://www.secg.org/sec2-v2.pdf</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SJKS17">[SJKS17]</dt>
+        <dd>
+<span class="refTitle">"SPHINX, A Password Store that Perfectly Hides from Itself"</span>, <span>&lt;<a href="https://eprint.iacr.org/2018/695">https://eprint.iacr.org/2018/695</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="x9.62">[x9.62]</dt>
+      <dd>
+<span class="refAuthor">ANSI</span>, <span class="refTitle">"Public Key Cryptography for the Financial Services Industry: the Elliptic Curve Digital Signature Algorithm (ECDSA)"</span>, <span class="seriesInfo">ANSI X9.62-1998</span>, <time datetime="1998-09" class="refDate">September 1998</time>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+<section id="section-9.2">
+        <h3 id="name-informative-references">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="JKX21">[JKX21]</dt>
+        <dd>
+<span class="refAuthor">Jarecki, S.</span>, <span class="refAuthor">Krawczyk, H.</span>, and <span class="refAuthor">J. Xu</span>, <span class="refTitle">"On the (In)Security of the Diffie-Hellman Oblivious PRF with Multiplicative Blinding"</span>, <span class="seriesInfo">PKC'21 </span>, <time datetime="2021-03" class="refDate">March 2021</time>, <span>&lt;<a href="https://eprint.iacr.org/2021/273">https://eprint.iacr.org/2021/273</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="keyagreement">[keyagreement]</dt>
+        <dd>
+<span class="refAuthor">Barker, E.</span>, <span class="refAuthor">Chen, L.</span>, <span class="refAuthor">Roginsky, A.</span>, <span class="refAuthor">Vassilev, A.</span>, and <span class="refAuthor">R. Davis</span>, <span class="refTitle">"Recommendation for pair-wise key-establishment schemes using discrete logarithm cryptography"</span>, <span class="seriesInfo">National Institute of Standards and Technology report</span>, <span class="seriesInfo">DOI 10.6028/nist.sp.800-56ar3</span>, <time datetime="2018-04" class="refDate">April 2018</time>, <span>&lt;<a href="https://doi.org/10.6028/nist.sp.800-56ar3">https://doi.org/10.6028/nist.sp.800-56ar3</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8446">[RFC8446]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 8446</span>, <span class="seriesInfo">DOI 10.17487/RFC8446</span>, <time datetime="2018-08" class="refDate">August 2018</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/rfc8446">https://datatracker.ietf.org/doc/html/rfc8446</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</section>
+<div id="test-vectors">
+<section id="section-appendix.a">
+      <h2 id="name-test-vectors">
+<a href="#section-appendix.a" class="section-number selfRef">Appendix A. </a><a href="#name-test-vectors" class="section-name selfRef">Test Vectors</a>
+      </h2>
+<p id="section-appendix.a-1">This section includes test vectors for the (V)OPRF protocol specified
+in this document. For each ciphersuite specified in <a href="#ciphersuites" class="xref">Section 5</a>,
+there is a set of test vectors for the protocol when run in the base
+mode and verifiable mode. Each test vector lists the batch size for
+the evaluation. Each test vector value is encoded as a hexadecimal
+byte string. The label for each test vector value is described below.<a href="#section-appendix.a-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-appendix.a-2.1">"Input": The client input, an opaque byte string.<a href="#section-appendix.a-2.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-appendix.a-2.2">"Blind": The blind value output by <code>Blind()</code>, a serialized <code>Scalar</code>
+of <code>Ns</code> bytes long.<a href="#section-appendix.a-2.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-appendix.a-2.3">"BlindedElement": The blinded value output by <code>Blind()</code>, a serialized
+<code>Element</code> of <code>Ne</code> bytes long.<a href="#section-appendix.a-2.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-appendix.a-2.4">"EvaluatedElement": The evaluated element output by <code>Evaluate()</code>,
+a serialized <code>Element</code> of <code>Ne</code> bytes long.<a href="#section-appendix.a-2.4" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-appendix.a-2.5">"EvaluationProofC": The "c" component of the Evaluation proof (only
+listed for verifiable mode test vectors), a serialized <code>Scalar</code> of
+<code>Ns</code> bytes long.<a href="#section-appendix.a-2.5" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-appendix.a-2.6">"EvaluationProofS": The "s" component of the Evaluation proof (only
+listed for verifiable mode test vectors), a serialized <code>Scalar</code> of
+<code>Ns</code> bytes long.<a href="#section-appendix.a-2.6" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-appendix.a-2.7">"Output": The OPRF output, a byte string of length <code>Nh</code> bytes.<a href="#section-appendix.a-2.7" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-appendix.a-3">Test vectors with batch size B &gt; 1 have inputs separated by a comma
+",". Applicable test vectors will have B different values for the
+"Input", "Blind", "BlindedElement", "EvaluationElement", and
+"Output" fields.<a href="#section-appendix.a-3" class="pilcrow">¶</a></p>
+<p id="section-appendix.a-4">The server key material, <code>pkSm</code> and <code>skSm</code>, are listed under the mode for
+each ciphersuite. Both <code>pkSm</code> and <code>skSm</code> are the serialized values of
+<code>pkS</code> and <code>skS</code>, respectively, as used in the protocol. Each key pair
+is derived from a <code>seed</code>, which is listed as well.<a href="#section-appendix.a-4" class="pilcrow">¶</a></p>
+<div id="oprfristretto255-sha-512-1">
+<section id="section-a.1">
+        <h2 id="name-oprfristretto255-sha-512-2">
+<a href="#section-a.1" class="section-number selfRef">A.1. </a><a href="#name-oprfristretto255-sha-512-2" class="section-name selfRef">OPRF(ristretto255, SHA-512)</a>
+        </h2>
+<div id="base-mode">
+<section id="section-a.1.1">
+          <h3 id="name-base-mode">
+<a href="#section-a.1.1" class="section-number selfRef">A.1.1. </a><a href="#name-base-mode" class="section-name selfRef">Base Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.1.1-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3
+skSm = ca8b6aa354a5ab1411b883acd5608a3ab12ac687c93623274bcb579fd6506
+b0c
+</pre><a href="#section-a.1.1-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1">
+<section id="section-a.1.1.1">
+            <h4 id="name-test-vector-1-batch-size-1">
+<a href="#section-a.1.1.1" class="section-number selfRef">A.1.1.1. </a><a href="#name-test-vector-1-batch-size-1" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.1.1.1-1">
+<pre>
+Input = 00
+Blind = c604c785ada70d77a5256ae21767de8c3304115237d262134f5e46e512cf
+8e03
+BlindedElement = a2b0b915f0404735ff6cf21f729e44d37123d0d1f5566e24207
+7866d965d1913
+EvaluationElement = 64f72c596342ab874077e8f98c721468c7332b1dc07a9595
+f22a10875f05762a
+Output = 4be865be03c4f560a641fec1cba70bda79891252c68f4ac65bff70e3f36
+ee63bbd7009f3456f648c6d2944f8691bf6119574694e16bfc8104947d7b41882211
+3
+</pre><a href="#section-a.1.1.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1">
+<section id="section-a.1.1.2">
+            <h4 id="name-test-vector-2-batch-size-1">
+<a href="#section-a.1.1.2" class="section-number selfRef">A.1.1.2. </a><a href="#name-test-vector-2-batch-size-1" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.1.1.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 5ed895206bfc53316d307b23e46ecc6623afb3086da74189a416012be037
+e50b
+BlindedElement = aab54258dcf735c6decabb723ddb12cf50894332f19c503d0b3
+b570a8e845235
+EvaluationElement = 9a404e12c29070fc20943210c78278a1ea13fe59c842261d
+0af113448eb3b747
+Output = c0f6e64639df3ea0ddd3173422aa9170c244db220fedb544091b609e868
+33eada85df7bb19c4add278b1a7c252bd505b9ccb3f1e1cb6d54cb5906eb1ac4c71a
+8
+</pre><a href="#section-a.1.1.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="verifiable-mode">
+<section id="section-a.1.2">
+          <h3 id="name-verifiable-mode">
+<a href="#section-a.1.2" class="section-number selfRef">A.1.2. </a><a href="#name-verifiable-mode" class="section-name selfRef">Verifiable Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.1.2-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3
+skSm = efd78e96dca2700086d815f1362a496ea5ed287756a8c043dc83479d7b8cf
+907
+pkSm = 6ca010a0a065ba492548a4ca08d0d4aa2f33e584b430bb8879712eb95668c
+b00
+</pre><a href="#section-a.1.2-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-1">
+<section id="section-a.1.2.1">
+            <h4 id="name-test-vector-1-batch-size-1-2">
+<a href="#section-a.1.2.1" class="section-number selfRef">A.1.2.1. </a><a href="#name-test-vector-1-batch-size-1-2" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.1.2.1-1">
+<pre>
+Input = 00
+Blind = ed8366feb6b1d05d1f46acb727061e43aadfafe9c10e5a64e7518d63e326
+3503
+BlindedElement = 78e6c1988b29ebe31fa04cc8752f0c4192c30574448eeec9025
+1d7e38dd7734d
+EvaluationElement = 9e6acebed23201a06ef66e3d18d5416790f065760e25a615
+f5eff2bd80b2d96d
+EvaluationProofC = 66f11e533994705f7c277713abadc27cb197ee43a3695bfa2
+64d8d17e9bdce0a
+EvaluationProofS = ae69686a4bc810f36332499d26fc15b0d06a057867be7c076
+b0416f1b7bdda03
+Output = b9ed37f840e339872c56ccbe95b5f3bd515418500ad65a30630093a3ecc
+e30b2ad85b9e815cc2056b0c168640e8d87c2ae0e47ed4f61b886bc3a699e2ce9d27
+c
+</pre><a href="#section-a.1.2.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-1">
+<section id="section-a.1.2.2">
+            <h4 id="name-test-vector-2-batch-size-1-2">
+<a href="#section-a.1.2.2" class="section-number selfRef">A.1.2.2. </a><a href="#name-test-vector-2-batch-size-1-2" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.1.2.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = e6d0f1d89ad552e383d6c6f4e8598cc3037d6e274d22da3089e7afbd4171
+ea02
+BlindedElement = f47147746012fdfc198479c70fd6282b21b56373a437c20d6f9
+1dda9caf8fb70
+EvaluationElement = bc1c5d8cbc34f6425feaba643e43078bd88e7e5d7d8f80fe
+167f96a8a3d12713
+EvaluationProofC = ec3e43fa4dd1053fa1d29d649a3b01d3e97176bee79968b9a
+e4a7f93056d490f
+EvaluationProofS = aee114a411955ebeae73977612e415d0ec43753c9e0186370
+245a16e9c3a3b0a
+Output = 8e2e8c97b685f0d425ae8658d798f67293092deb823242a9417ec846a8f
+d7ffac89228b05ace8b65fe759686a1162e00829ef9e803634a296861dcb656f36a3
+4
+</pre><a href="#section-a.1.2.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-3-batch-size-2">
+<section id="section-a.1.2.3">
+            <h4 id="name-test-vector-3-batch-size-2">
+<a href="#section-a.1.2.3" class="section-number selfRef">A.1.2.3. </a><a href="#name-test-vector-3-batch-size-2" class="section-name selfRef">Test Vector 3, Batch Size 2</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.1.2.3-1">
+<pre>
+Input = 00,5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 80513e77795feeec6d2c450589b0e1b178febd5c193a9fcba0d27f0a06e0
+d50f,533c2e6d91c934f919ac218973be55ba0d7b234160a0d4cf3bddafbda99e2e0
+c
+BlindedElement = 3a4d96d627817ea924cafc5a9890a71b1956f722e2b002bf212
+cef3312d1236e,c8af2bec79423cb3d22ea285fe3f2c3a4d0d6cd1c786facf824b24
+9e7089f74d
+EvaluationElement = 8c96598d69347e184d2c5550e8311e8f34d5aa32604d1dc4
+3af62ffc483ae366,249a61269553a2f2af3bc276b019ad8683230ee5900a5b3118c
+f7c6bdae0582d
+EvaluationProofC = 26aef3ce1ad5f4da19bd51490827cb184bf9c943501901bc5
+9d24e19f0b84602
+EvaluationProofS = 450c726f1e3f71068fd319d5a210ab77132613cb1fbc69cf7
+de8df314e9a3309
+Output = b9ed37f840e339872c56ccbe95b5f3bd515418500ad65a30630093a3ecc
+e30b2ad85b9e815cc2056b0c168640e8d87c2ae0e47ed4f61b886bc3a699e2ce9d27
+c,8e2e8c97b685f0d425ae8658d798f67293092deb823242a9417ec846a8fd7ffac8
+9228b05ace8b65fe759686a1162e00829ef9e803634a296861dcb656f36a34
+</pre><a href="#section-a.1.2.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="oprfdecaf448-shake-256-1">
+<section id="section-a.2">
+        <h2 id="name-oprfdecaf448-shake-256-2">
+<a href="#section-a.2" class="section-number selfRef">A.2. </a><a href="#name-oprfdecaf448-shake-256-2" class="section-name selfRef">OPRF(decaf448, SHAKE-256)</a>
+        </h2>
+<div id="base-mode-1">
+<section id="section-a.2.1">
+          <h3 id="name-base-mode-2">
+<a href="#section-a.2.1" class="section-number selfRef">A.2.1. </a><a href="#name-base-mode-2" class="section-name selfRef">Base Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.2.1-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
+skSm = 1c122faee287c03fe0335709ff5c3ae894afb1af6bc23f2ac29a13aa68517
+2d96eb20c529765b90d7e5729bebed085cff8c4c970a02b5a02
+</pre><a href="#section-a.2.1-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-2">
+<section id="section-a.2.1.1">
+            <h4 id="name-test-vector-1-batch-size-1-3">
+<a href="#section-a.2.1.1" class="section-number selfRef">A.2.1.1. </a><a href="#name-test-vector-1-batch-size-1-3" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.2.1.1-1">
+<pre>
+Input = 00
+Blind = d1080372f0fcf8c5eace50914e7127f576725f215cc7c111673c635ce668
+bbbb9b50601ad89b358ab8c23ed0b6c9d040365ec9d060868714
+BlindedElement = ae531d67081d88ec2c3d4fa0ada4c19eea7cb14a3028a071128
+5b3c00a828fbae1b5b7b13fbd81fbd629f4765d75d8bfa0d228971f5d4d0e
+EvaluationElement = b05e9027190b8c90e4f0e5d69e1d6244621ae1b99908e26a
+18c1fcb7d7960c1c759df117dbfdb262c9ff03211fc174a56e4c5613caaa766b
+Output = db8e4eb7f13bed68474403da6b6c5d3580328d8d56a5726ee090db873e3
+05534cebc491010f2f4c40409904819d711b0ccb487049a08838f02b09f440e9f677
+4
+</pre><a href="#section-a.2.1.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-2">
+<section id="section-a.2.1.2">
+            <h4 id="name-test-vector-2-batch-size-1-3">
+<a href="#section-a.2.1.2" class="section-number selfRef">A.2.1.2. </a><a href="#name-test-vector-2-batch-size-1-3" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.2.1.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = aed1ffa44fd8f0ed16373606a3cf7df589cca86d8ea1abbf5768771dbef3
+d401c74ae55ba1e28b9565e1e4018eb261a14134a4ce60c1c718
+BlindedElement = eaa242fe3e8696ac173fa96c5314c00ae9fe4312716bbadbd32
+e352db3b33a3faa0f3e295623a4b189c37d0e606c750a31bbccaa744a741d
+EvaluationElement = d2ae6c747fbb053f07a989970d386baf12ad862dfbbc19bc
+d8763c360f00b51795b4ebc01427969ad3beb5f83d1772adc92770abee187ab0
+Output = 36fbf2a529f52189856eb21bda822c15cdc59e67ea2405dfd7bc0eb3377
+10c90ec5247ddb57368e7681704cad3be668b5c78f3e9b7176db5ba7920b3fe69599
+e
+</pre><a href="#section-a.2.1.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="verifiable-mode-1">
+<section id="section-a.2.2">
+          <h3 id="name-verifiable-mode-2">
+<a href="#section-a.2.2" class="section-number selfRef">A.2.2. </a><a href="#name-verifiable-mode-2" class="section-name selfRef">Verifiable Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.2.2-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
+skSm = f9054ff1428ab7e433dfe4284e285a46fff7244b6720c252c04399baf0bcf
+37264e30f204e22d55ec68a1a4741d262debcdc6f1967e9b52b
+pkSm = 80c6fe37e3775b9e658606eb63110fc4b6d50788abc6d49b9dc043a6eb696
+a6bc7e968f098ca14437c0c1e14021a08b2c1f1a735d0110b41
+</pre><a href="#section-a.2.2-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-3">
+<section id="section-a.2.2.1">
+            <h4 id="name-test-vector-1-batch-size-1-4">
+<a href="#section-a.2.2.1" class="section-number selfRef">A.2.2.1. </a><a href="#name-test-vector-1-batch-size-1-4" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.2.2.1-1">
+<pre>
+Input = 00
+Blind = 4c936db1779a621b6c71475ac3111fd5703a59b713929f36dfd1e892a7fe
+814479c93d8b4b6e11d1f6fe5351e51457b665fa7b76074e531f
+BlindedElement = a23f111a3768df2d4740f0b8f0bc3e2d87ed731a81f7a51d59e
+a4ab45b91187b19168e853453f7eb36038b1725a39143fafc26aabb2c4f85
+EvaluationElement = ccec470dc226b6ddc6b4077dedee1863335fda93142a50d8
+4e2ef33f9cc1abe611663c70572bb4909bc3d27436c44f429394fa834fcd20e2
+EvaluationProofC = 1362f3143f97c1f53753cf0122a30777dda4132934424269c
+01888069b0b233a531b9d04b1df60bc569403e66cb941faa238638c4390d01b
+EvaluationProofS = d2ccde80592539257f6b41e1e4b2bfcf91f28ee50cbe28017
+0ec0a802c9a8ab693b770cf3b6a0cddab55887103303045dbbd487fbb696311
+Output = aca8629d596db97e207f5ce5f8b3e52fd3a2f55986b6707aa0100b36946
+5894b67a2f70d8095e1c1ef8d9d483d87d61d12585c0bfa1a8d4e2c0e801ccd4387c
+e
+</pre><a href="#section-a.2.2.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-3">
+<section id="section-a.2.2.2">
+            <h4 id="name-test-vector-2-batch-size-1-4">
+<a href="#section-a.2.2.2" class="section-number selfRef">A.2.2.2. </a><a href="#name-test-vector-2-batch-size-1-4" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.2.2.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 15b3355179392f40c3d5a15f0d5ffc354e340454ec779f575e4573a3886a
+b5e57e4da2985cea9e32f6d95539ce2c7189e1bd7462e8c5483a
+BlindedElement = 48ee7c9aedc3999d65967bacba285111c770d02596bb729ea5b
+5df0027718e1b3f5043a0e7d9f8b70ccdbac20b7a5b203bf4db7464209f75
+EvaluationElement = 9ca5140dc42dfd087d4137ed7d6ef4c794515f370a6bae50
+25d5f68ce65be6d33ead92dd29ae767194eb1fc18681ae8b0e6b90345fe5ffbf
+EvaluationProofC = a3503e8bf6ba1069a2fa1931e2c8c65a171b8bd3b1251a538
+b12211ea2031e15d6642a4003973164a06c421e2a110f7fe5f498b704f07c0f
+EvaluationProofS = 47946ea50489e414814dc3bf8ef2ded11414b57d0148b0406
+720cc3b19d13523416b83fbb29b82e213f644b9d2309ad5f2316626ef4e273a
+Output = d38127857cade4f852df7b59fd73679f0e52c35df54bc237c574b5224ff
+ec31a0d7d95bb9357c12c58a1a161ce5639fbcb12a90581ff825442ee72f68b388bc
+6
+</pre><a href="#section-a.2.2.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-3-batch-size-2-1">
+<section id="section-a.2.2.3">
+            <h4 id="name-test-vector-3-batch-size-2-2">
+<a href="#section-a.2.2.3" class="section-number selfRef">A.2.2.3. </a><a href="#name-test-vector-3-batch-size-2-2" class="section-name selfRef">Test Vector 3, Batch Size 2</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.2.2.3-1">
+<pre>
+Input = 00,5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 614bb578f29cc677ea9e7aea3e4839413997e020f9377b63c13584156a09
+a46dd2a425c41eac0e313a47e99d05df72c6e1d58e6592577a0d,4c115060bca87db
+7d73e00cbb8559f84cb7a221b235b0950a0ab553f03f10e1386abe954011b7da62bb
+6599418ef90b5d4ea98cc28aff517
+BlindedElement = 22a9bca806348d3dd2cb475a51a6700071ef2ab5c69560d7115
+bb20389e1673c918b9adb18192f702e4fb74f970ef1fdc1271b2863488d3c,669331
+f2214526e77875fb4181d02ec7d223f69e732f39a7b6db4381847accfdf4625bb03e
+cfd096f20f173cae91eb60cc91fc76be53e12b
+EvaluationElement = ee1f71f992bc89cf69ed6c9a289c1f9ccc872aca2819d55d
+a5eed3dac4cb9eecae9804520ac14c09a20cdcf0ee57dd08619733511470f4c8,d03
+c1403dd3b16e6429a8ddcc8c3bca2d15317deb966d4f8d173c19d5f95edd6f1c5170
+f02deb14d466d8a1f855249fd3ad18ef4f2176fa7
+EvaluationProofC = 625acdee93abb326a39d21aff820a960e13c213a82e4392ac
+1f140f4103a26d0d5a78ffbbe963c6bb41213274cc76dd64db8fcdc4092531e
+EvaluationProofS = 1b142b67d4d33f2319fc28816709a8e2b72f35a0895aeafae
+f6c932aa37a468801fe00732b1d6ab4d0d82dd0bcddeec678e999a77d9c2128
+Output = aca8629d596db97e207f5ce5f8b3e52fd3a2f55986b6707aa0100b36946
+5894b67a2f70d8095e1c1ef8d9d483d87d61d12585c0bfa1a8d4e2c0e801ccd4387c
+e,d38127857cade4f852df7b59fd73679f0e52c35df54bc237c574b5224ffec31a0d
+7d95bb9357c12c58a1a161ce5639fbcb12a90581ff825442ee72f68b388bc6
+</pre><a href="#section-a.2.2.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="oprfp-256-sha-256-1">
+<section id="section-a.3">
+        <h2 id="name-oprfp-256-sha-256-2">
+<a href="#section-a.3" class="section-number selfRef">A.3. </a><a href="#name-oprfp-256-sha-256-2" class="section-name selfRef">OPRF(P-256, SHA-256)</a>
+        </h2>
+<div id="base-mode-2">
+<section id="section-a.3.1">
+          <h3 id="name-base-mode-3">
+<a href="#section-a.3.1" class="section-number selfRef">A.3.1. </a><a href="#name-base-mode-3" class="section-name selfRef">Base Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.3.1-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3
+skSm = 815a77cf92f333bdf6869bd9166bf4fb820160e0d9703236ac3e42b0e44b3
+f11
+</pre><a href="#section-a.3.1-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-4">
+<section id="section-a.3.1.1">
+            <h4 id="name-test-vector-1-batch-size-1-5">
+<a href="#section-a.3.1.1" class="section-number selfRef">A.3.1.1. </a><a href="#name-test-vector-1-batch-size-1-5" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.3.1.1-1">
+<pre>
+Input = 00
+Blind = 5d9e7f6efd3093c32ecceabd57fb03cf760c926d2a7bfa265babf29ec98a
+f0d0
+BlindedElement = 036fe34ec785f565c67188575fb85e45dcae1a01ecd7574839c
+ff353eb3f9bc094
+EvaluationElement = 02185a9448067c7ea4cb566288f52de635c73f85b94adb83
+08e797fb5742c77e92
+Output = 1dd9f4380834ce07f964b4a0e9407df2619403b5c0435e86842d46ff312
+2e43f
+</pre><a href="#section-a.3.1.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-4">
+<section id="section-a.3.1.2">
+            <h4 id="name-test-vector-2-batch-size-1-5">
+<a href="#section-a.3.1.2" class="section-number selfRef">A.3.1.2. </a><a href="#name-test-vector-2-batch-size-1-5" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.3.1.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 825155ab61f17605af2ae2e935c78d857c9407bcd45128d57d338f1671b5
+fcbe
+BlindedElement = 0357489736f9da62cc104facdb909eb95e5cd556ca4a08b2793
+732f5e3504c2c3c
+EvaluationElement = 03ad96ee687c9a4d57b55f46698c9e2796acc78c05a0d0e2
+2bc30e753f73f03b88
+Output = fe345d391aead5bb83f01f048ba5d901f92271faf9c035d0baf5434a324
+5eb1a
+</pre><a href="#section-a.3.1.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="verifiable-mode-2">
+<section id="section-a.3.2">
+          <h3 id="name-verifiable-mode-3">
+<a href="#section-a.3.2" class="section-number selfRef">A.3.2. </a><a href="#name-verifiable-mode-3" class="section-name selfRef">Verifiable Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.3.2-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3
+skSm = 029ec0bf2e6153ece839125e15d76a9f054ce2945bfb57e32e39f43c0b5e3
+280
+pkSm = 029667382da3efb1d8df771ec1ca7f0dd598dda9bbd4c79b920c2d1e3dec2
+20885
+</pre><a href="#section-a.3.2-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-5">
+<section id="section-a.3.2.1">
+            <h4 id="name-test-vector-1-batch-size-1-6">
+<a href="#section-a.3.2.1" class="section-number selfRef">A.3.2.1. </a><a href="#name-test-vector-1-batch-size-1-6" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.3.2.1-1">
+<pre>
+Input = 00
+Blind = cee64d86fd20ab4caa264a26c0e3d42fb773b3173ba76f9588c9b14779bd
+8d91
+BlindedElement = 02b41f164e08371c89bd222c974e88cb6172ba370d8baf3385b
+c94ddee5424bfbe
+EvaluationElement = 03d33c6042831cc0512682ba3a460f708487d41f5730a772
+c6f58051cbcc9ddd00
+EvaluationProofC = 97e25954ef3b32e7dbda9e5682248de0557d05a3aeda68d82
+3da68c00b5ecd81
+EvaluationProofS = 3c3af0c921a130c31514c5a1f67e4894f6cf2c30b89986201
+0bc2082ac1c32dd
+Output = 847440cc811af42db433390156665727cd9d4b77bb5f780247be57b8a4f
+db109
+</pre><a href="#section-a.3.2.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-5">
+<section id="section-a.3.2.2">
+            <h4 id="name-test-vector-2-batch-size-1-6">
+<a href="#section-a.3.2.2" class="section-number selfRef">A.3.2.2. </a><a href="#name-test-vector-2-batch-size-1-6" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.3.2.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 5c4b401063eff0bf242b4cd534a79bacfc2e715b2db1e7a3ad4ff8af1b24
+daa2
+BlindedElement = 029703a326c304b2c46b6bd5a9c4a0bbbd1be424282eb01759f
+74823f1850d7542
+EvaluationElement = 020c60764bb224f75aa9b0743565c80d02b387710f03a655
+8c0610b3cf2e149d9c
+EvaluationProofC = ab689c74384635f460e973f3fe0f3b7699b978d560b516714
+63a50e479a9c8c8
+EvaluationProofS = 51f91b07ff22e68c22c70b2684df64f7abc0d9aa8cac8298d
+d8d27eba486e71a
+Output = ac42adf5facc79dd1ae9e93581d86fbd7d592a46ceee555008c62436cf8
+5ed61
+</pre><a href="#section-a.3.2.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-3-batch-size-2-2">
+<section id="section-a.3.2.3">
+            <h4 id="name-test-vector-3-batch-size-2-3">
+<a href="#section-a.3.2.3" class="section-number selfRef">A.3.2.3. </a><a href="#name-test-vector-3-batch-size-2-3" class="section-name selfRef">Test Vector 3, Batch Size 2</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.3.2.3-1">
+<pre>
+Input = 00,5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = f0c7822ba317fb5e86028c44b92bd3aedcf6744d388ca013ef33edd36930
+4eda,3b9631be9f8b274d9aaf671bfb6a775229bf435021b89c683259773bc686956
+b
+BlindedElement = 03312d163f9d3a2865abbf14fd88a7c4495ad0a31d47a7eccb8
+840078fa0b8cf72,0241673bca26af06f27173856929510521ab70dec3862b7f17cf
+aae2db499e763d
+EvaluationElement = 02f2e480184399670b8180ad3e0033ba9e687de1f72d3e9f
+6b2848a506ad588842,028bd2585e828df05b5172d6cc024c8f111860c27c7446af6
+4466f90cf9ea5fb99
+EvaluationProofC = a75ba68649e6e4c56adad738e5bf449dd2798b187a2999761
+9552b922145b61b
+EvaluationProofS = 60e8e7272d428ce66ef64438f24012124e1b8efecf5900597
+dd25308bdcb7bbc
+Output = 847440cc811af42db433390156665727cd9d4b77bb5f780247be57b8a4f
+db109,ac42adf5facc79dd1ae9e93581d86fbd7d592a46ceee555008c62436cf85ed
+61
+</pre><a href="#section-a.3.2.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="oprfp-384-sha-512-1">
+<section id="section-a.4">
+        <h2 id="name-oprfp-384-sha-512-2">
+<a href="#section-a.4" class="section-number selfRef">A.4. </a><a href="#name-oprfp-384-sha-512-2" class="section-name selfRef">OPRF(P-384, SHA-512)</a>
+        </h2>
+<div id="base-mode-3">
+<section id="section-a.4.1">
+          <h3 id="name-base-mode-4">
+<a href="#section-a.4.1" class="section-number selfRef">A.4.1. </a><a href="#name-base-mode-4" class="section-name selfRef">Base Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.4.1-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
+skSm = 8d075563c385b0a7fe52fe36cec021c7fd338aa47f672b230b01248362669
+06b3431e2cd99ae52b569707aeb86b7f2d7
+</pre><a href="#section-a.4.1-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-6">
+<section id="section-a.4.1.1">
+            <h4 id="name-test-vector-1-batch-size-1-7">
+<a href="#section-a.4.1.1" class="section-number selfRef">A.4.1.1. </a><a href="#name-test-vector-1-batch-size-1-7" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.4.1.1-1">
+<pre>
+Input = 00
+Blind = 359073c015b92d15450f7fb395bf52c6ea98384c491fe4e4d423b59de7b0
+df382902c13bdc9993d3717bda68fc080b99
+BlindedElement = 0264775b50549d9e7aa07ecf0ac0dba04068352aeefc2086095
+46cec329f74de77bcdbd84dc6cfcc0064e1fd0cc967e299
+EvaluationElement = 025df8ac4c4d0b3477109263a671f73feaec0f07bbe09c8a
+605a8903b600d95c0efd1e111fa00c343657d91a36d9b42c94
+Output = 1eacc030ccdfd1d8fbc9cac4c794124056a013f6efa3621fc18ab52ddc5
+bb440c63f8146a1db7266e1b04465eca212267f146beb248f551723537b9f6967501
+9
+</pre><a href="#section-a.4.1.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-6">
+<section id="section-a.4.1.2">
+            <h4 id="name-test-vector-2-batch-size-1-7">
+<a href="#section-a.4.1.2" class="section-number selfRef">A.4.1.2. </a><a href="#name-test-vector-2-batch-size-1-7" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.4.1.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 21ece4f9b6ffd01ce82082545413bd9bb5e8f3c63b86ae88d9ce0530b01c
+b1c23382c7ec9bdd6e75898e4877d8e2bc17
+BlindedElement = 0382fa4dd4ccee8c7acb95d9db71298f830ab6ec16a4e07b411
+6c5800b67e4687af57eb240b4d01b3efa1a0ad67889f3a6
+EvaluationElement = 0234c7bed4271c83d17a399cdaefdd35bff967cdf84fda31
+0eaedb15e2cf4337be68eeba23c80619ed83ab11aa691a51ab
+Output = 569da7a3a183234f2ca5dc54145acd2450189161c93c9e6993fe9a913ba
+dba1d80c5fcae2e6d466757ce294ea5571545b81ed5f80cc11ea7891a97069f26b8e
+4
+</pre><a href="#section-a.4.1.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="verifiable-mode-3">
+<section id="section-a.4.2">
+          <h3 id="name-verifiable-mode-4">
+<a href="#section-a.4.2" class="section-number selfRef">A.4.2. </a><a href="#name-verifiable-mode-4" class="section-name selfRef">Verifiable Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.4.2-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3
+skSm = 978dd82d645ae675237d855fb6cbb370573fa9e23328859777aaea11e2e25
+eefce619f6d45f2eed992c4ec4660603dd8
+pkSm = 03efdc97c396c9be4912e5171eec99cbf32342316f4e2eb0b955da6fdc9a4
+15299cb13df4f9c8afd9d17e276beee3afc2a
+</pre><a href="#section-a.4.2-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-7">
+<section id="section-a.4.2.1">
+            <h4 id="name-test-vector-1-batch-size-1-8">
+<a href="#section-a.4.2.1" class="section-number selfRef">A.4.2.1. </a><a href="#name-test-vector-1-batch-size-1-8" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.4.2.1-1">
+<pre>
+Input = 00
+Blind = 102f6338df84c9602bfa9e7d690b1f7a173d07e6d54a419db4a6308f8b09
+589e4283efb9cd1ee4061c6bf884e60a8774
+BlindedElement = 02c986d3031a5d2e89ab88ae8d0a4c95ca35001c038ee7c2200
+b8d2e9629656d5075f3ce290471ebc2929b92e8c2864415
+EvaluationElement = 022f77977e0c48c40e1f5fa4cf4863b50de01deeb9898f73
+7dc487496532d86a195de445af21259f2a3cf2ab9eac53847d
+EvaluationProofC = de697533f92f92c85d443bd976e483b95060ff67f2b9e49ce
+fffa3040f3837d586812796072ad78ac0f771179a51a0dd
+EvaluationProofS = 4c8d434bb423652e3d0dce00f2485b6acb3d0ff4d6317fe31
+10d4208a788ed24b384ce530547ab362a30e65a1dee2ed1
+Output = fbeb018ae74510e4851d0bb7190ad25491ad62f180304c79c5c587c3f4b
+05d4eafcdf03fa1e5c4518f14df71c9b4099e3251a40d59bf687ad971f94211a499a
+c
+</pre><a href="#section-a.4.2.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-7">
+<section id="section-a.4.2.2">
+            <h4 id="name-test-vector-2-batch-size-1-8">
+<a href="#section-a.4.2.2" class="section-number selfRef">A.4.2.2. </a><a href="#name-test-vector-2-batch-size-1-8" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.4.2.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 8aec1d0c3d16afd032da7ba961449a56cec6fb918e932b06d5778ac7f67b
+ecfb3e3869237f74106241777f230582e84a
+BlindedElement = 0327a0b343334f057293f4099e2b04dc463922267bda9e55772
+30b26fd6c70bd0a406224cd8e3b40240b6d4c28c2438245
+EvaluationElement = 0281b5dace35beb0665cd6413c93025a3bc92ac14b9fff2b
+149f3311c39d827ffaf2d5c0caa7b5d18a5bc5175074c1eeed
+EvaluationProofC = 920c37f3cc5c2aabe0c34c0c10eeffdf7029b31baaa6fb80d
+6962faeb428c53f6c37c62a84ff14fcaa6f5ba6bea6762b
+EvaluationProofS = eb17655a85ba41a9b9742bc3013b8c193608c1b207e779a10
+607f628775659cf927b73b967c300e4eefb280ea366f080
+Output = 9d2ca080f75bd14180e2ef39b172bd4ae5b935d6fcb83871fce36833d41
+90c800460f62f2fe61e497aaa1c7870ef847d804dff38e6fd861d1377abc21a5b1b6
+9
+</pre><a href="#section-a.4.2.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-3-batch-size-2-3">
+<section id="section-a.4.2.3">
+            <h4 id="name-test-vector-3-batch-size-2-4">
+<a href="#section-a.4.2.3" class="section-number selfRef">A.4.2.3. </a><a href="#name-test-vector-3-batch-size-2-4" class="section-name selfRef">Test Vector 3, Batch Size 2</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.4.2.3-1">
+<pre>
+Input = 00,5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 41fabd4722d92472d858051ce9ad1a533176a862c697b2c392aff2aeb77e
+b20c2ae6ba52fe31e13e03bf1d9f39878b23,51171628f1d28bb7402ca4aea6465e2
+67b7f977a1fb71593281099ef2625644aee0b6c5f5e6e01a2b052b3bd4caf539b
+BlindedElement = 02a6738084eef2815492c165396d30eef11988cee9e414c2f94
+4fe923a6b713ad407bba14aa64ce5cdb54fcab2f188d35a,022220c85f60658ea072
+2ad580456f251d3f5c4cdf7bae8e7f53ad7f831ecf17fab90001e1f093f422c88275
+bffdde7a18
+EvaluationElement = 033b46f23ba734f076e75cbe357f7dd9b066814a785138f6
+e8685929bb96001fa40e0c3f3912e9643460d6cbd5c6b38700,03b26f1912318ee31
+2cfa5436c2ba787d0ea049b59874d87a3249f331bc7387b1eb835b184712f56b4d8a
+2312821131a0a
+EvaluationProofC = c8c736682d51b46896f3e6071aa1ad70098aca081def3d450
+886d002ae4b99a29152c187182a49df057cca2387b7515a
+EvaluationProofS = f03df2d149ce09cd2d64a08db2ff8c120a40b31fcae78d493
+6778622d2c028f0ec2552585339ead14c140afab4ee57e0
+Output = fbeb018ae74510e4851d0bb7190ad25491ad62f180304c79c5c587c3f4b
+05d4eafcdf03fa1e5c4518f14df71c9b4099e3251a40d59bf687ad971f94211a499a
+c,9d2ca080f75bd14180e2ef39b172bd4ae5b935d6fcb83871fce36833d4190c8004
+60f62f2fe61e497aaa1c7870ef847d804dff38e6fd861d1377abc21a5b1b69
+</pre><a href="#section-a.4.2.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="oprfp-521-sha-512-1">
+<section id="section-a.5">
+        <h2 id="name-oprfp-521-sha-512-2">
+<a href="#section-a.5" class="section-number selfRef">A.5. </a><a href="#name-oprfp-521-sha-512-2" class="section-name selfRef">OPRF(P-521, SHA-512)</a>
+        </h2>
+<div id="base-mode-4">
+<section id="section-a.5.1">
+          <h3 id="name-base-mode-5">
+<a href="#section-a.5.1" class="section-number selfRef">A.5.1. </a><a href="#name-base-mode-5" class="section-name selfRef">Base Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.5.1-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3
+skSm = 004b6d726577fb03f271cc2019225dba2c95c30f3db9ccd3f7c73e72e5b88
+dd414aae248363968cdec91eac95aca69d1bf76cda42213ed965a0218b0c9d4c9e70
+639
+</pre><a href="#section-a.5.1-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-8">
+<section id="section-a.5.1.1">
+            <h4 id="name-test-vector-1-batch-size-1-9">
+<a href="#section-a.5.1.1" class="section-number selfRef">A.5.1.1. </a><a href="#name-test-vector-1-batch-size-1-9" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.5.1.1-1">
+<pre>
+Input = 00
+Blind = 01b983705fcc9a39607288b935b0797ac6b3c4b2e848823ac9ae16b3a3b5
+816be03432370deb7c3c17d9fc7cb4e0ce646e04e42d638e0fa7a434ed340772a8b5
+d626
+BlindedElement = 030050fc7061af80cb04426077ca987bea12b02e00e3b889b5e
+57d399711d99e2a106083bb018ad9a7bc1207d402280e3ab2ee07551781a7263e931
+608255550d1c0b7
+EvaluationElement = 02003e638c43939c6372833e9cc58ff8f8d1b524c775f2be
+4fee700316e9f16402ca62962d95efbbc17a85d340a811a0a64084c710c0a3e19e3e
+ebb756e790a43e2c69
+Output = 85ef5bc3cc7d6229fd45d276939834e8e78f680b5b9f602ae4a41bfa096
+641621a0cb0ac4afdd09037a4a6d07846855c3124af5a1bdbc4f4345bf0381695710
+1
+</pre><a href="#section-a.5.1.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-8">
+<section id="section-a.5.1.2">
+            <h4 id="name-test-vector-2-batch-size-1-9">
+<a href="#section-a.5.1.2" class="section-number selfRef">A.5.1.2. </a><a href="#name-test-vector-2-batch-size-1-9" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.5.1.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 01a03b1096b0316bc8567c89bd70267d35c8ddcb2be2cdc867089a2eb5cf
+471b1e6eb4b043b9644c8539857abe3a2022e9c9fd6a1695bbabe8add48bcd149ff3
+b841
+BlindedElement = 0300f0b27a82d48b5f64f48a861c0a9d2387bfeb49e861e3eca
+4e0ce2a2068585db53a00eea5a8925dedd1fdacc5caaa77fd30119eb4aa179704a62
+0f637fa93aa1199
+EvaluationElement = 0200b178d00273ef32bf1fa3725b172908dfe0b0a5449791
+cb692a04934e9c0f92cd7f8bc74e02524eb3ea16ce86a06faf4104cf113a01f6e996
+0f9baf0d786b2dead4
+Output = c690a31df7904a928ddbfd431d4609dd1e81698276d57dfe9dd7334debb
+75dd1153390c19145c54281099a8a18e00172b0cbe19a28501e698f35a30c514b855
+0
+</pre><a href="#section-a.5.1.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="verifiable-mode-4">
+<section id="section-a.5.2">
+          <h3 id="name-verifiable-mode-5">
+<a href="#section-a.5.2" class="section-number selfRef">A.5.2. </a><a href="#name-verifiable-mode-5" class="section-name selfRef">Verifiable Mode</a>
+          </h3>
+<div class="artwork art-text alignLeft" id="section-a.5.2-1">
+<pre>
+seed = a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a
+3a3
+skSm = 01f26b83346e4b549ede2c8687c06de412cdb70d74574dd8e47711f583474
+c1a0390b51e140b127a2442b3c97ed24c4d5ebc571c95552a31c37885e3d35294243
+343
+pkSm = 0301baa9fe02e50c9919c927a51d33d9a2546d37a61c1d3978c1a8e9370bf
+6ef05670362c54c7a6579f243c9f21e9c27f6ae36c6eb05c5ff7aadd8a5b866a2204
+a6e59
+</pre><a href="#section-a.5.2-1" class="pilcrow">¶</a>
+</div>
+<div id="test-vector-1-batch-size-1-9">
+<section id="section-a.5.2.1">
+            <h4 id="name-test-vector-1-batch-size-1-10">
+<a href="#section-a.5.2.1" class="section-number selfRef">A.5.2.1. </a><a href="#name-test-vector-1-batch-size-1-10" class="section-name selfRef">Test Vector 1, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.5.2.1-1">
+<pre>
+Input = 00
+Blind = 00bbb82117c88bbd91b8954e16c0b9ceed3ce992b198be1ebfba9ba970db
+d75beefbfc6d056b7f7ba1ef79f4facbf2d912c26ce2ecc5bb8d66419b379952e96b
+d6f5
+BlindedElement = 0300b44672b938e6d00d8442a32f2187341befd4457db3839b6
+370b08f909a4043cd409b8ae984fc30c22d31782782c7b2d99bda682c330eced0119
+f7e8d1dcc04d203
+EvaluationElement = 0301d5236536b3df5728e70bc572f07a18b9cac7d28532d9
+df5c2230a31c19208fae931734c427b7b25d6f7e6d38788f1cc3bc3e3da4065f3888
+b18e44d0d57ecbbfd9
+EvaluationProofC = 00adfbdee29b391fb413037dbd1649192f8edc84e60732b98
+d0e31c6386afb521227db8a0cced9ea03f9e4c5e65baa0133eb28915fde6e2364c1e
+7545aafdf3123ab
+EvaluationProofS = 00b234bcb10dbb782a530f5a3bc6e6db0d2c65faa5bdba545
+929ab96f06474027c86c3340dbf6cdc7e7f181e0331bf8dc50337afdf119d74b09ea
+87c75f48d6dca07
+Output = b34400c99f49ce09dcb72bff46f5847fe168c7c738cf2887ed101acf9a9
+259f9fc96e33418dbe235075500b5c304d3b553fbd2723610c0a2a1cc2bac5b47983
+7
+</pre><a href="#section-a.5.2.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-2-batch-size-1-9">
+<section id="section-a.5.2.2">
+            <h4 id="name-test-vector-2-batch-size-1-10">
+<a href="#section-a.5.2.2" class="section-number selfRef">A.5.2.2. </a><a href="#name-test-vector-2-batch-size-1-10" class="section-name selfRef">Test Vector 2, Batch Size 1</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.5.2.2-1">
+<pre>
+Input = 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 009055c99bf9591cb0eab2a72d044c05ca2cc2ef9b609a38546f74b6d688
+f70cf205f782fa11a0d61b2f5a8a2a1143368327f3077c68a1545e9aafbba6a90dc0
+d40a
+BlindedElement = 0201ffd5826ff1d03b6b6067397be6e654e0201ec7e3aec2283
+418dd378b123d476fbc75c75ae1464c6c3df653d0e3809bc0159653eb6389460dddb
+ce519fa99fd6e2f
+EvaluationElement = 02003d8415bbd3f49b19a232d2cacfed1c60683618a25ff9
+761caeb7b3888dc5d98ca9c689b5521897bcefb6eef140d09e1f6c44d38328020b7e
+8eb992a1386e747093
+EvaluationProofC = 00feb087e1b9bd899e866742cc4b572fab2ce21c318bc71b9
+b04bee94ee6c8a3d122f60b8fcd470675244fb6cec9aa1edc90cd7a12b6ff4b8f3a6
+f0f117f3a765940
+EvaluationProofS = 00e36bc40f04e4187d38bbcf27d1605081768adcc3d39fd27
+e117ef6818e527597a8549de0231d71ae95d1221224dcbe758e784d7166294fbc87f
+8dd575865553d05
+Output = 2b5eb016c7dcd66b77826e2da167a69026adfc0927b6a3da869c4c73d3a
+e7873f010ea8f1ad5f9f9a076928839ec25882cab7b66909a1187d9329fef71fd25b
+c
+</pre><a href="#section-a.5.2.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="test-vector-3-batch-size-2-4">
+<section id="section-a.5.2.3">
+            <h4 id="name-test-vector-3-batch-size-2-5">
+<a href="#section-a.5.2.3" class="section-number selfRef">A.5.2.3. </a><a href="#name-test-vector-3-batch-size-2-5" class="section-name selfRef">Test Vector 3, Batch Size 2</a>
+            </h4>
+<div class="artwork art-text alignLeft" id="section-a.5.2.3-1">
+<pre>
+Input = 00,5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+Blind = 01c6cf092d80c7cf2cb55388d899515238094c800bdd9c65f71780ba85f5
+ae9b4703e17e559ca3ccd1944f9a70536c175f11a827452672b60d4e9f89eba28104
+6e29,00cba1ba1a337759061965a423d9d3d6e1e1006dc8984ad28a4c93ecfc36fc2
+171046b3c4284855cfa2434ed98db9e68a597db2c14728fade716a6a82d600444b26
+e
+BlindedElement = 02002f5e85091d9074df6ec1385b34bf721e97f108dd40ce8fa
+b58ff824df92ef07f44817a7e7393e96af70cf28cc8d989942d262b8ced5b5cc8883
+a997b2c1b605709,02001a712b503cafc256f92400576e0f651febd492d6d79bc8b0
+64b6380131f0e3e02fc244b07ea3ecefb254615a51bb0ff9f5ee278e5298fb6200c5
+428b0f1516732a
+EvaluationElement = 0200013df3966e35f6fe4aebc03556e9129a785b9e9de494
+86a708223995e6d3c1c76e2e3c7d8793a3f13018dffcc39efd4139534cd62b537dd0
+7af3b35e87c8a67137,0201c4930b16d295d32c94f4b86cac9c86fe7c104d7bf6cec
+3206c5cd60c4375ec9c15a34f23005bce90ceaef65ef64a4c5fb79534272fc1d27a1
+82685fdf36829f67d
+EvaluationProofC = 0191a4979b63550a68ca40c114dbfef876ccb7c9cb15b5c37
+cf8aa5cf87b82f3ed54a94ac546ed5871abbdd8ebafce8190c99cef3620d986d2297
+0e4ca511b2f3b08
+EvaluationProofS = 00f5cde39b96027557cd7cc1679c5a49f54bf4954a21ab295
+d52039e99271583761e7fdda23ed2a851b087e1301880ee169bad6366a64307ce837
+d0af2f843f6e950
+Output = b34400c99f49ce09dcb72bff46f5847fe168c7c738cf2887ed101acf9a9
+259f9fc96e33418dbe235075500b5c304d3b553fbd2723610c0a2a1cc2bac5b47983
+7,2b5eb016c7dcd66b77826e2da167a69026adfc0927b6a3da869c4c73d3ae7873f0
+10ea8f1ad5f9f9a076928839ec25882cab7b66909a1187d9329fef71fd25bc
+</pre><a href="#section-a.5.2.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="section-appendix.b">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Alex Davidson</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:alex.davidson92@gmail.com" class="email">alex.davidson92@gmail.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Armando Faz-Hernandez</span></div>
+<div dir="auto" class="left"><span class="org">Cloudflare</span></div>
+<div dir="auto" class="left"><span class="street-address">101 Townsend St</span></div>
+<div dir="auto" class="left">
+<span class="locality">San Francisco</span>,  </div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:armfazh@cloudflare.com" class="email">armfazh@cloudflare.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Nick Sullivan</span></div>
+<div dir="auto" class="left"><span class="org">Cloudflare</span></div>
+<div dir="auto" class="left"><span class="street-address">101 Townsend St</span></div>
+<div dir="auto" class="left">
+<span class="locality">San Francisco</span>,  </div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:nick@cloudflare.com" class="email">nick@cloudflare.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Christopher A. Wood</span></div>
+<div dir="auto" class="left"><span class="org">Cloudflare</span></div>
+<div dir="auto" class="left"><span class="street-address">101 Townsend St</span></div>
+<div dir="auto" class="left">
+<span class="locality">San Francisco</span>,  </div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:caw@heapingbits.net" class="email">caw@heapingbits.net</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
