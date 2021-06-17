@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-06-10T00:38:22.318920+00:00",
+  "timestamp": "2021-06-17T00:34:22.559446+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -3501,15 +3501,15 @@
       "id": "MDU6SXNzdWU4MTI3NTExNjY=",
       "title": "Change SHA-512 to SHAKE-256 for Decaf",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/234",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "claucece",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "This is basically an extension of #200 \r\n\r\ned448 is implemented with SHAKE-256, as defined and analysed here: https://tools.ietf.org/html/rfc8032#section-8.9\r\n\r\nFollowing the same comment by @jedisct1 , decaf448 is a natural extension to ed448 (even though it is not widely implemented), and it uses shake-256. \r\n\r\nThis, of course, mean that the  expand_message function will be different.\r\n\r\nI raised this point and #200 when implementing ristretto and decaf in the poc. \r\n\r\nJust wondering the thoughts after #200 went through.\r\n\r\ncc./ @jedisct1 @chris-wood ",
       "createdAt": "2021-02-21T01:56:01Z",
-      "updatedAt": "2021-02-21T20:45:13Z",
-      "closedAt": null,
+      "updatedAt": "2021-06-16T13:40:23Z",
+      "closedAt": "2021-06-16T13:40:23Z",
       "comments": [
         {
           "author": "chris-wood",
@@ -3661,15 +3661,15 @@
       "id": "MDU6SXNzdWU4Mjg1NDU4NTY=",
       "title": "Blinding blues",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/241",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "[Jarecki et al.](https://eprint.iacr.org/2021/273) have an upcoming paper at [PKCS2021](https://pkc.iacr.org/2021) that analyzes security properties of blinding mechanisms used in the 2HashDH construction. Recall, for the purposes of this issue, there are two types of blinding (using group notation to align with this specification, whereas their paper uses exponential notaton):\r\n\r\n- Multiplicative: \r\n   - C -> S: a = rH\u2019(x), for random scalar r\r\n   - S -> C: b = ak, for server private key k\r\n   - C: output H(x, br^(-1)) = H(x, kH\u2019(x))\r\n- Additive:\r\n   - C -> S: a = H\u2019(x) + rG, for random scalar r and fixed generator G\r\n   - S -> C: (b = ak, z = kG), for server private key k\r\n   - C: output H(x, b - zr) = H(x, H\u2019(x))\r\n\r\nA generalized summary of their results, without accounting for particular application properties, is as follows.\r\n\r\n- Multiplicative blinding is safe. \r\n- Additive blinding is possibly unsafe, unless:\r\n   - The client has a certified copy of the server public key. This always applies in the verifiable mode by necessity. There may be cases where the client has a certified copy of the key in the base mode.\r\n   - The client input is high entropy, e.g., in the case of Privacy Pass, 32 random bytes of data.\r\n   - The client mixes the public key z = kG into the OPRF evaluation, e.g., by computing H(x, z, kH\u2019(x)) instead of H(x, kH\u2019(x)).\r\n\r\nThe fundamental problem is as follows: additive blinding with a maliciously created z, i.e., one different than kG, gives the attacker a way of testing one input per OPRF interaction. Applications wherein this is possible regardless of the blinding mechanism, e.g., OPAQUE, are not affected (additive blinding is OK). However, for applications where this attacker capability  does not otherwise exist, additive introduces a real weakness.\r\n\r\nAll in all, this means the choice of blinding mechanism has security implications. The draft should ideally offer a sane default for applications that know what they\u2019re doing (see similar text in [hash-to-curve](https://cfrg.github.io/draft-irtf-cfrg-hash-to-curve/draft-irtf-cfrg-hash-to-curve.html#section-10)), with options and guidance for applications in doing something different if their circumstances warrant it. In considering these defaults, there are a number of options on the table, accounting for code reuse, performance, and bandwidth. \r\n\r\nHere\u2019s what I propose we do to address this issue.\r\n\r\nFirst, refactor the document slightly to permit different types of Blind and Unblind implementations. For example, Blind might be implemented using multiplicative, additive, or both types of blinding. While doing this, require that additive blinding always include the server public key in the Unblind output so that it\u2019s folded into the Finalize computation. This would promote both types of blindings to the main part of the document, whereas additive blinding is currently specified in an appendix.\r\n\r\nSecond, map each mode to a particular implementation in the following way:\r\n\r\n- Verified mode uses additive blinding, by default, since it is strictly a performance improvement and the client is expected to have a certified copy of the public key.\r\n- Weak verifiable mode (see [issue #225](https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/225) uses both additive and multiplicative.\r\n- Base mode uses multiplicative blinding, by default, as it does not require the server public key. Elsewhere, perhaps in an appendix, we can clarify that applications can use additive blinding only if the server public key is available or if the client input is high entropy.",
       "createdAt": "2021-03-11T00:58:49Z",
-      "updatedAt": "2021-03-11T12:40:04Z",
-      "closedAt": null,
+      "updatedAt": "2021-06-16T14:12:36Z",
+      "closedAt": "2021-06-16T14:12:36Z",
       "comments": []
     },
     {
@@ -3677,7 +3677,7 @@
       "id": "MDU6SXNzdWU4MzM4ODExOTQ=",
       "title": "NIST curve scalar serialization",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/242",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -3686,9 +3686,17 @@
       "labels": [],
       "body": "We currently say that implementations should reduce mod `p`, but `p` is elsewhere the order of the group (and not the underlying field). We should probably fix the language here.",
       "createdAt": "2021-03-17T15:03:17Z",
-      "updatedAt": "2021-05-20T17:50:06Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2021-06-16T14:09:31Z",
+      "closedAt": "2021-06-16T14:09:31Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed in #249.",
+          "createdAt": "2021-06-16T14:09:31Z",
+          "updatedAt": "2021-06-16T14:09:31Z"
+        }
+      ]
     },
     {
       "number": 244,
@@ -3722,6 +3730,22 @@
           "updatedAt": "2021-05-21T15:03:09Z"
         }
       ]
+    },
+    {
+      "number": 251,
+      "id": "MDU6SXNzdWU5MjE2NjE4MDc=",
+      "title": "Should deserializing to the identity element be considered invalid?",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/251",
+      "state": "CLOSED",
+      "author": "kevinlewi",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The specification of `RandomScalar` says:\r\n\r\n> RandomScalar(): A member function of GG that chooses at random a non-zero element in GF(p).\r\n\r\nWhich means that `blindedElement` should never be the identity element.\r\n\r\nAt the moment, the server runs `DeserializeElement(BlindedElement)` as the first step of Evaluate:\r\n\r\n> DeserializeElement(buf): A member function of GG that maps a byte array buf to a group element A, or fails if the input is not a valid byte representation of an element.\r\n\r\nWhat if `BlindedElement` is indeed the identity element -- should this be considered invalid and rejected immediately by the server? Or should the server continue processing the request even though the client could not have generated this by following the protocol?",
+      "createdAt": "2021-06-15T18:04:31Z",
+      "updatedAt": "2021-06-16T23:21:16Z",
+      "closedAt": "2021-06-16T23:21:16Z",
+      "comments": []
     }
   ],
   "pulls": [
@@ -16472,21 +16496,21 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTc4NzI0NTg0",
       "title": "Change decaf to use shake",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/238",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "claucece",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2021-02-23T20:12:27Z",
-      "updatedAt": "2021-04-13T13:41:42Z",
+      "updatedAt": "2021-06-16T13:40:45Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "d88e53c61ce7be263fb5e7f9f6beae6ffaac0e6f",
       "headRepository": "claucece/draft-irtf-cfrg-voprf",
       "headRefName": "master",
       "headRefOid": "6fb690541b3ef06727df3e5e7d193db417941eb1",
-      "closedAt": null,
+      "closedAt": "2021-06-16T13:40:44Z",
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
@@ -16630,6 +16654,13 @@
           "body": "> is there a reason to make this a bigger priority now? Thanks!\r\n\r\nNope! I'm just curious to know what the status is for this change.",
           "createdAt": "2021-04-13T13:41:42Z",
           "updatedAt": "2021-04-13T13:41:42Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Closing in favor of #249.",
+          "createdAt": "2021-06-16T13:40:44Z",
+          "updatedAt": "2021-06-16T13:40:44Z"
         }
       ],
       "reviews": [
@@ -17508,24 +17539,26 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NjY1MTY2NzY4",
       "title": "Adopt SHAKE-256 for decaf448",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/249",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This also fixes some serialization ambiguities.\r\n\r\nCloses #234, #242.\r\n\r\ncc @claucece ",
       "createdAt": "2021-06-08T18:33:19Z",
-      "updatedAt": "2021-06-08T19:23:08Z",
+      "updatedAt": "2021-06-16T13:40:24Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "8bf50a0507813b92a6886ef26c504fc29402d1de",
       "headRepository": "cfrg/draft-irtf-cfrg-voprf",
       "headRefName": "caw/h2s",
       "headRefOid": "71fd44be270168fa1c0c74bae384a06c840eb9dd",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2021-06-16T13:40:24Z",
+      "mergedAt": "2021-06-16T13:40:23Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "7645aa3dca6002ca8348008cc128c3cc54a1b1d0"
+      },
       "comments": [],
       "reviews": [
         {
@@ -17540,6 +17573,59 @@
           "createdAt": "2021-06-08T19:16:23Z",
           "updatedAt": "2021-06-08T19:16:23Z",
           "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg0ODg1MTc1",
+          "commit": {
+            "abbreviatedOid": "71fd44b"
+          },
+          "author": "alxdavids",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-16T08:38:23Z",
+          "updatedAt": "2021-06-16T08:38:23Z",
+          "comments": [
+            {
+              "originalPosition": 38,
+              "body": "I haven't really been involved in the SHAKE discussions, but is there a reason why SHAKE is suitable for decaf, but not for ristretto?",
+              "createdAt": "2021-06-16T08:38:23Z",
+              "updatedAt": "2021-06-16T08:38:23Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg0ODg1NjA3",
+          "commit": {
+            "abbreviatedOid": "71fd44b"
+          },
+          "author": "alxdavids",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Looks fine to me!",
+          "createdAt": "2021-06-16T08:38:47Z",
+          "updatedAt": "2021-06-16T08:38:47Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg0OTM0ODYz",
+          "commit": {
+            "abbreviatedOid": "71fd44b"
+          },
+          "author": "bytemare",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-16T09:25:15Z",
+          "updatedAt": "2021-06-16T09:25:15Z",
+          "comments": [
+            {
+              "originalPosition": 38,
+              "body": "It's about the consistency with regard to their original definitions, cf #234 ",
+              "createdAt": "2021-06-16T09:25:15Z",
+              "updatedAt": "2021-06-16T09:25:15Z"
+            }
+          ]
         }
       ]
     },
@@ -17548,26 +17634,324 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NjY1NDI0MzA4",
       "title": "Pin blinding mechanism to mode",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/250",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This change does three things:\r\n\r\n1. Mandates additive blinding for verifiable mode.\r\n2. RECOMMENDS multiplicative blinding for base mode.\r\n3. Adds security considerations for applications discussing when it's appropriate to use additive blinding in base mode.\r\n\r\nCloses #241.\r\n\r\ncc @hugokraw for a look at the blind considerations text :-)",
       "createdAt": "2021-06-08T23:14:29Z",
-      "updatedAt": "2021-06-09T21:26:05Z",
+      "updatedAt": "2021-06-16T14:12:36Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "8bf50a0507813b92a6886ef26c504fc29402d1de",
       "headRepository": "cfrg/draft-irtf-cfrg-voprf",
       "headRefName": "caw/blind-fix",
-      "headRefOid": "72176b9763d81c3df41806e97df472f3ea34def7",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "2cd64dac78bc257c8acd073f602cd7eae9f149c5",
+      "closedAt": "2021-06-16T14:12:36Z",
+      "mergedAt": "2021-06-16T14:12:35Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "fb6e18eab052a6fb0d19a42d973c048137e29ce5"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg0NTk2MDIw",
+          "commit": {
+            "abbreviatedOid": "72176b9"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "in general is good, just left some ediorial suggestions",
+          "createdAt": "2021-06-15T23:27:43Z",
+          "updatedAt": "2021-06-15T23:39:25Z",
+          "comments": [
+            {
+              "originalPosition": 148,
+              "body": "```suggestion\r\nrepresentation of the public key. This avoids computing `blindedPublicKey` in `VerifiableUnblind`.\r\n```",
+              "createdAt": "2021-06-15T23:27:43Z",
+              "updatedAt": "2021-06-15T23:39:25Z"
+            },
+            {
+              "originalPosition": 186,
+              "body": "```suggestion\r\npre-process tables of multiples of the group generator.\r\nThis gives computational efficiency advantage, due to the fact that, by\r\nusing precomputation, fixed-base multiplications can be calculated faster\r\nthan variable-base multiplications. Pre-processing also reduces the\r\namount of computation that\r\n```",
+              "createdAt": "2021-06-15T23:34:15Z",
+              "updatedAt": "2021-06-15T23:39:25Z"
+            },
+            {
+              "originalPosition": 193,
+              "body": "```suggestion\r\n- Multiplicative blinding is safe for all applications.\r\n```",
+              "createdAt": "2021-06-15T23:34:56Z",
+              "updatedAt": "2021-06-15T23:39:25Z"
+            },
+            {
+              "originalPosition": 197,
+              "body": "```suggestion\r\n  is met: The client has a certified copy of the server public key (as is the\r\n  case in verifiable mode), the client input has high entropy, or the client mixes\r\n  the public key into the OPRF evaluation.\r\n```",
+              "createdAt": "2021-06-15T23:35:47Z",
+              "updatedAt": "2021-06-15T23:39:25Z"
+            },
+            {
+              "originalPosition": 204,
+              "body": "```suggestion\r\nThe verifiable mode always makes use of the more efficient additive blinding variant,\r\n```",
+              "createdAt": "2021-06-15T23:36:43Z",
+              "updatedAt": "2021-06-15T23:39:25Z"
+            },
+            {
+              "originalPosition": 205,
+              "body": "```suggestion\r\nas the public key is always available for verifying the proof.\r\n```",
+              "createdAt": "2021-06-15T23:37:17Z",
+              "updatedAt": "2021-06-15T23:39:25Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg0ODg4NTU1",
+          "commit": {
+            "abbreviatedOid": "f699b1b"
+          },
+          "author": "alxdavids",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "I think it looks good, I just have a few nits.",
+          "createdAt": "2021-06-16T08:41:31Z",
+          "updatedAt": "2021-06-16T08:50:56Z",
+          "comments": [
+            {
+              "originalPosition": 147,
+              "body": "Should we be more specific about how the server key is blinded if it is provided here? Perhaps offering it as an optional input below and then returning either nil (if it wasn't supplied) or the blinded version. I would just be worried that this text leaves it up to interpretation currently.",
+              "createdAt": "2021-06-16T08:41:31Z",
+              "updatedAt": "2021-06-16T08:50:56Z"
+            },
+            {
+              "originalPosition": 147,
+              "body": "Perhaps something like this:\r\n```\r\n~~~\r\nInput:\r\n  PublicKey? pkS\r\n\r\nOutput:\r\n  Element blindedGenerator\r\n  Element blindedPublicKey\r\n  Scalar blind\r\n\r\ndef Preprocess(pkS):\r\n  blind = GG.RandomScalar()\r\n  blindedGenerator = ScalarBaseMult(blind)\r\n  if (!pkS):\r\n    return blindedGenerator, null, blind\r\n  blindedPublicKey = ScalarMult(pkS, blind)\r\n  return blindedGenerator, blindedPublicKey, blind\r\n~~~\r\n```",
+              "createdAt": "2021-06-16T08:46:24Z",
+              "updatedAt": "2021-06-16T08:50:57Z"
+            },
+            {
+              "originalPosition": 184,
+              "body": "Maybe we should be less certain here, because the advantage is only provided that the pre-computation is done.\r\n\r\n```suggestion\r\nThis can provide a computational efficiency advantage due to the fact that, by\r\n```",
+              "createdAt": "2021-06-16T08:47:55Z",
+              "updatedAt": "2021-06-16T08:50:56Z"
+            },
+            {
+              "originalPosition": 198,
+              "body": "```suggestion\r\n  is met: \r\n    - The client has a certified copy of the server public key (as is the case in the verifiable mode)\r\n    - The client input has high entropy\r\n    - The client mixes the public key into the OPRF evaluation.\r\n```",
+              "createdAt": "2021-06-16T08:49:55Z",
+              "updatedAt": "2021-06-16T08:50:56Z"
+            },
+            {
+              "originalPosition": 200,
+              "body": "```suggestion\r\nTo avoid security issues with the base mode, where some of the above conditions may not be met, this specification RECOMMENDS use of\r\n```",
+              "createdAt": "2021-06-16T08:50:18Z",
+              "updatedAt": "2021-06-16T08:50:57Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg1MjI1MTMw",
+          "commit": {
+            "abbreviatedOid": "2cd64da"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-16T14:12:19Z",
+          "updatedAt": "2021-06-16T14:12:19Z",
+          "comments": [
+            {
+              "originalPosition": 147,
+              "body": "I resolved this slightly differently by using the public key that's available upon context creation.",
+              "createdAt": "2021-06-16T14:12:19Z",
+              "updatedAt": "2021-06-16T14:12:19Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 252,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjcxNTU0NjE2",
+      "title": "Add explicit deserialization errors, and describe validation logic.",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/252",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #251.\r\n\r\ncc @kevinlewi, @bytemare",
+      "createdAt": "2021-06-16T14:45:35Z",
+      "updatedAt": "2021-06-16T23:21:16Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "fb6e18eab052a6fb0d19a42d973c048137e29ce5",
+      "headRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "headRefName": "caw/validation",
+      "headRefOid": "b65eb025d72a73072fa728409c79bab1ac9a134f",
+      "closedAt": "2021-06-16T23:21:16Z",
+      "mergedAt": "2021-06-16T23:21:16Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "cacbddbb8c88686f9cfc756eb6740fe677c2f0d5"
+      },
+      "comments": [
+        {
+          "author": "kevinlewi",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Great!",
+          "createdAt": "2021-06-16T18:14:20Z",
+          "updatedAt": "2021-06-16T18:14:20Z"
+        },
+        {
+          "author": "bytemare",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Looks good !",
+          "createdAt": "2021-06-16T20:16:29Z",
+          "updatedAt": "2021-06-16T20:16:29Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg1NzA1MjM5",
+          "commit": {
+            "abbreviatedOid": "6d890eb"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2021-06-16T22:04:20Z",
+          "updatedAt": "2021-06-16T22:14:19Z",
+          "comments": [
+            {
+              "originalPosition": 71,
+              "body": "```suggestion\r\nfails.\r\n```",
+              "createdAt": "2021-06-16T22:04:21Z",
+              "updatedAt": "2021-06-16T22:14:19Z"
+            },
+            {
+              "originalPosition": 100,
+              "body": "\r\n```suggestion\r\nand `Evaluate` can fail if any element received from the peer fails deserialization.\r\n```",
+              "createdAt": "2021-06-16T22:06:01Z",
+              "updatedAt": "2021-06-16T22:14:19Z"
+            },
+            {
+              "originalPosition": 99,
+              "body": "```suggestion\r\nSome VOPRF APIs specified in this document are fallible. For example, `Finalize`\r\n```",
+              "createdAt": "2021-06-16T22:06:13Z",
+              "updatedAt": "2021-06-16T22:14:19Z"
+            },
+            {
+              "originalPosition": 105,
+              "body": "can we remove the public and secret adverbs?\r\nBetter to generalize to `group elements and scalars`. \r\n\r\n```suggestion\r\n- `DeserializeError`: Group element or scalar deserialization failure; {{pog}}.\r\n```",
+              "createdAt": "2021-06-16T22:08:46Z",
+              "updatedAt": "2021-06-16T22:14:19Z"
+            },
+            {
+              "originalPosition": 120,
+              "body": "Something like this would be better: \r\n`The DeserializeElement function recovers a group element from its byte representation after serialization.`\r\nsimilarly for `DeserializeScalar`",
+              "createdAt": "2021-06-16T22:13:24Z",
+              "updatedAt": "2021-06-16T22:14:19Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg1NzI1NDM4",
+          "commit": {
+            "abbreviatedOid": "fd06312"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-16T22:44:20Z",
+          "updatedAt": "2021-06-16T22:44:20Z",
+          "comments": [
+            {
+              "originalPosition": 120,
+              "body": "Hmm, I'm not sure. I think what we have here is accurate. (The person calling this has no idea that the byte array came from the output of SerializeElement, for example. It could be garbage!)",
+              "createdAt": "2021-06-16T22:44:20Z",
+              "updatedAt": "2021-06-16T22:44:20Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg1NzM2NTMy",
+          "commit": {
+            "abbreviatedOid": "fd06312"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-16T23:09:31Z",
+          "updatedAt": "2021-06-16T23:09:31Z",
+          "comments": [
+            {
+              "originalPosition": 120,
+              "body": "as is, it describes also the signature of a hash to group function. \r\nThe issue is with the `convert` word, `recover` could be more accurate.\r\n\r\n\r\n\r\n",
+              "createdAt": "2021-06-16T23:09:31Z",
+              "updatedAt": "2021-06-16T23:09:31Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg1NzM3NDA0",
+          "commit": {
+            "abbreviatedOid": "fd06312"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-16T23:11:33Z",
+          "updatedAt": "2021-06-16T23:11:34Z",
+          "comments": [
+            {
+              "originalPosition": 120,
+              "body": "as is, it says that the function necessarily returns a group element from whatever byte string is passed.",
+              "createdAt": "2021-06-16T23:11:33Z",
+              "updatedAt": "2021-06-16T23:11:34Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg1NzM4MzIx",
+          "commit": {
+            "abbreviatedOid": "b65eb02"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-16T23:13:42Z",
+          "updatedAt": "2021-06-16T23:13:42Z",
+          "comments": [
+            {
+              "originalPosition": 120,
+              "body": "Both conversion and recovery are fallible, so I don't really see a difference. But I changed it to recovery anyway. :) ",
+              "createdAt": "2021-06-16T23:13:42Z",
+              "updatedAt": "2021-06-16T23:13:42Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njg1NzQwNzkw",
+          "commit": {
+            "abbreviatedOid": "b65eb02"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-06-16T23:19:45Z",
+          "updatedAt": "2021-06-16T23:19:45Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
