@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-06-17T00:34:22.559446+00:00",
+  "timestamp": "2021-06-20T00:37:13.044553+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -17952,6 +17952,34 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 253,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjcyNDI4MDI0",
+      "title": "Change affiliation",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/253",
+      "state": "MERGED",
+      "author": "alxdavids",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2021-06-17T09:19:07Z",
+      "updatedAt": "2021-06-17T11:35:54Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "cacbddbb8c88686f9cfc756eb6740fe677c2f0d5",
+      "headRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "headRefName": "alxdavids/affiliation",
+      "headRefOid": "5c6190f4cd6324323908027f8d75114647f3a016",
+      "closedAt": "2021-06-17T11:35:54Z",
+      "mergedAt": "2021-06-17T11:35:54Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "0669690ab39782e921642167dc74b1854409640b"
+      },
+      "comments": [],
+      "reviews": []
     }
   ]
 }
