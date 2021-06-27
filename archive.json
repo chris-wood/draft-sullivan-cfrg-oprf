@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-06-20T00:37:13.044553+00:00",
+  "timestamp": "2021-06-27T00:40:14.861798+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -17980,6 +17980,85 @@
       },
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 254,
+      "id": "MDExOlB1bGxSZXF1ZXN0Njc3OTM1NDUy",
+      "title": "Fix #224: Update text for static DH oracle",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/254",
+      "state": "OPEN",
+      "author": "alxdavids",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Apologies for the long wait on this, CI seems to be failing but it doesn't immediately look like a linting error?",
+      "createdAt": "2021-06-25T13:57:18Z",
+      "updatedAt": "2021-06-25T20:22:55Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "0669690ab39782e921642167dc74b1854409640b",
+      "headRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "headRefName": "alxdavids/sdh-oracle",
+      "headRefOid": "985b427e304c64d85b88cc26c31087c56d439e3f",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NjkyOTMxMTEz",
+          "commit": {
+            "abbreviatedOid": "985b427"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "This LGTM pending one question about OPAQUE. ",
+          "createdAt": "2021-06-25T15:18:49Z",
+          "updatedAt": "2021-06-25T15:22:03Z",
+          "comments": [
+            {
+              "originalPosition": 15,
+              "body": "```suggestion\nreduce the security of the instantiation by log_2(2^20)/2 = 10 bits. Launching an attack would require\n2^{p/2-(log(Q)/2} bits of memory.\n```\n",
+              "createdAt": "2021-06-25T15:18:49Z",
+              "updatedAt": "2021-06-25T15:22:03Z"
+            },
+            {
+              "originalPosition": 37,
+              "body": "Hmm... is this true? The OPRF oracle output is included in the server's response to the client, it just so happens that the OPRF key is unique per user. ",
+              "createdAt": "2021-06-25T15:20:44Z",
+              "updatedAt": "2021-06-25T15:22:03Z"
+            },
+            {
+              "originalPosition": 50,
+              "body": "```suggestion\nsecurity of lower than 128 bits, we recommend only implementing\nciphersuites with IDs 0x0002, 0x0004, and 0x0005.\n```\n",
+              "createdAt": "2021-06-25T15:21:44Z",
+              "updatedAt": "2021-06-25T15:22:03Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NjkzMTY3MjY5",
+          "commit": {
+            "abbreviatedOid": "985b427"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-25T20:22:55Z",
+          "updatedAt": "2021-06-25T20:22:55Z",
+          "comments": [
+            {
+              "originalPosition": 15,
+              "body": "it this 2^p of 2^log(p) ?",
+              "createdAt": "2021-06-25T20:22:55Z",
+              "updatedAt": "2021-06-25T20:22:55Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
