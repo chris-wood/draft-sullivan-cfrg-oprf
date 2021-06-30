@@ -5,10 +5,10 @@
 Network Working Group                                        A. Davidson
 Internet-Draft                                            Brave Software
 Intended status: Informational                          A. Faz-Hernandez
-Expires: 27 December 2021                                    N. Sullivan
+Expires: 1 January 2022                                      N. Sullivan
                                                                C.A. Wood
                                                               Cloudflare
-                                                            25 June 2021
+                                                            30 June 2021
 
 
    Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 December 2021.
+   This Internet-Draft will expire on 1 January 2022.
 
 Copyright Notice
 
@@ -1339,8 +1339,8 @@ def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, pro
    provides 128 bits of security against discrete log cryptanalysis.
    Then an adversary with access to a Q-sDH oracle and makes Q=2^20
    queries can reduce the security of the instantiation by log_2(2^20)/2
-   = 10 bits.  It is worth highlighting that launching an attack would
-   require 2^{p/2-(log(Q)/2} bits of memory.
+   = 10 bits.  Launching an attack would require 2^{p/2-(log(Q)/2} bits
+   of memory.
 
    Notice that it is easy to instantiate a Q-sDH oracle using the OPRF
    functionality that we provide.  A client can just submit sequential
@@ -1372,7 +1372,7 @@ def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, pro
    something that may result in problems in the future.  For
    applications that admit the aforementioned oracle functionality, and
    that cannot tolerate discrete logarithm security of lower than 128
-   bits, we recommend only implementing ciphersuites with IDs: 0x0002,
+   bits, we recommend only implementing ciphersuites with IDs 0x0002,
    0x0004, and 0x0005.
 
 7.3.  Element and Scalar Validation
