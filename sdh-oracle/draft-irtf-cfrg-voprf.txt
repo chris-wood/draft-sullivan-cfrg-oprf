@@ -5,10 +5,10 @@
 Network Working Group                                        A. Davidson
 Internet-Draft                                            Brave Software
 Intended status: Informational                          A. Faz-Hernandez
-Expires: 1 January 2022                                      N. Sullivan
+Expires: 2 January 2022                                      N. Sullivan
                                                                C.A. Wood
                                                               Cloudflare
-                                                            30 June 2021
+                                                             1 July 2021
 
 
    Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 1 January 2022.
+   This Internet-Draft will expire on 2 January 2022.
 
 Copyright Notice
 
@@ -1339,7 +1339,7 @@ def Finalize(input, blindedPublicKey, evaluatedElement, blindedElement, pkS, pro
    provides 128 bits of security against discrete log cryptanalysis.
    Then an adversary with access to a Q-sDH oracle and makes Q=2^20
    queries can reduce the security of the instantiation by log_2(2^20)/2
-   = 10 bits.  Launching an attack would require 2^{p/2-(log(Q)/2} bits
+   = 10 bits.  Launching an attack would require 2^(p/2-log_2(Q)/2) bits
    of memory.
 
    Notice that it is easy to instantiate a Q-sDH oracle using the OPRF
