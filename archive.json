@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-06-27T00:40:14.861798+00:00",
+  "timestamp": "2021-07-01T00:37:24.776213+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -17993,13 +17993,13 @@
       "labels": [],
       "body": "Apologies for the long wait on this, CI seems to be failing but it doesn't immediately look like a linting error?",
       "createdAt": "2021-06-25T13:57:18Z",
-      "updatedAt": "2021-06-25T20:22:55Z",
+      "updatedAt": "2021-06-30T12:17:27Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "0669690ab39782e921642167dc74b1854409640b",
       "headRepository": "cfrg/draft-irtf-cfrg-voprf",
       "headRefName": "alxdavids/sdh-oracle",
-      "headRefOid": "985b427e304c64d85b88cc26c31087c56d439e3f",
+      "headRefOid": "54cce71653d3e87eb88a1df7f9dcc18923780363",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -18055,6 +18055,46 @@
               "body": "it this 2^p of 2^log(p) ?",
               "createdAt": "2021-06-25T20:22:55Z",
               "updatedAt": "2021-06-25T20:22:55Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk1ODExMDE0",
+          "commit": {
+            "abbreviatedOid": "54cce71"
+          },
+          "author": "alxdavids",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-06-30T07:57:53Z",
+          "updatedAt": "2021-06-30T07:57:53Z",
+          "comments": [
+            {
+              "originalPosition": 37,
+              "body": "Ah, misunderstood the setting, I have changed the text",
+              "createdAt": "2021-06-30T07:57:53Z",
+              "updatedAt": "2021-06-30T07:57:53Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk2MDc3Mjcz",
+          "commit": {
+            "abbreviatedOid": "54cce71"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Recommend removing the OPAQUE reference entirely. We can clarify the situation over in that document. Pending that change, this LGTM.",
+          "createdAt": "2021-06-30T12:16:58Z",
+          "updatedAt": "2021-06-30T12:17:27Z",
+          "comments": [
+            {
+              "originalPosition": 38,
+              "body": "```suggestion\r\nIn applications where such an oracle is not made available this security loss does not apply.\r\n```",
+              "createdAt": "2021-06-30T12:16:59Z",
+              "updatedAt": "2021-06-30T12:17:27Z"
             }
           ]
         }
