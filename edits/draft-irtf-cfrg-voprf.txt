@@ -1659,8 +1659,9 @@ Appendix A.  Test Vectors
    "Input", "Blind", "BlindedElement", "EvaluationElement", and "Output"
    fields.
 
-   Base and verifiable mode use multiplicative and additive blinding as
-   described in Section 3.3.3 and Section 3.3.4, respectively.
+   Base mode uses multiplicative blinding while verifiable mode uses
+   additive blinding, as described in Section 3.3.3 and Section 3.3.4,
+   respectively.
 
    The server key material, "pkSm" and "skSm", are listed under the mode
    for each ciphersuite.  Both "pkSm" and "skSm" are the serialized
