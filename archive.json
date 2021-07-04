@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-07-01T00:37:24.776213+00:00",
+  "timestamp": "2021-07-04T00:36:12.081132+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -3210,7 +3210,7 @@
       "id": "MDU6SXNzdWU3ODc3MzM4ODg=",
       "title": "Update static DH oracle text",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/224",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -3221,8 +3221,8 @@
       ],
       "body": "From @hugokraw:\r\n\r\n> An attack with Q queries, lowers security by (log Q)/2 bits (not log Q), and it only applies if Q is a divisor of p-1 or p+1. Moreover, the *memory* cost of the attack (not just time) is 2^{p/2-(log(Q)/2}. \r\n\r\nWe might also want to update the \"use a larger curve\" guidance, since whether or not it's needed depends on the feasibility of these attacks. (OPAQUE, for example, is fine to use P-256 and the like.)\r\n\r\nMore information can be found in [Taylor's writeup](https://mumble.net/~campbell/tmp/20210116/draft-riastradh-staticdh.html) on  \"Attacks on Static Diffie-Hellman Oracles\".",
       "createdAt": "2021-01-17T15:49:05Z",
-      "updatedAt": "2021-06-08T11:57:23Z",
-      "closedAt": null,
+      "updatedAt": "2021-07-01T08:55:53Z",
+      "closedAt": "2021-07-01T08:55:53Z",
       "comments": [
         {
           "author": "hugokraw",
@@ -17986,25 +17986,35 @@
       "id": "MDExOlB1bGxSZXF1ZXN0Njc3OTM1NDUy",
       "title": "Fix #224: Update text for static DH oracle",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/254",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "alxdavids",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Apologies for the long wait on this, CI seems to be failing but it doesn't immediately look like a linting error?",
       "createdAt": "2021-06-25T13:57:18Z",
-      "updatedAt": "2021-06-30T12:17:27Z",
+      "updatedAt": "2021-07-01T08:55:53Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "0669690ab39782e921642167dc74b1854409640b",
       "headRepository": "cfrg/draft-irtf-cfrg-voprf",
       "headRefName": "alxdavids/sdh-oracle",
-      "headRefOid": "54cce71653d3e87eb88a1df7f9dcc18923780363",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "headRefOid": "866a91b2760fa4241ebf0a4ad0f8efcecb4cd5d1",
+      "closedAt": "2021-07-01T08:55:53Z",
+      "mergedAt": "2021-07-01T08:55:53Z",
+      "mergedBy": "alxdavids",
+      "mergeCommit": {
+        "oid": "6da4ed3071b4eb58278c7091d14b031f2e41683f"
+      },
+      "comments": [
+        {
+          "author": "alxdavids",
+          "authorAssociation": "COLLABORATOR",
+          "body": "LGTM; merging!",
+          "createdAt": "2021-07-01T08:55:41Z",
+          "updatedAt": "2021-07-01T08:55:41Z"
+        }
+      ],
       "reviews": [
         {
           "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NjkyOTMxMTEz",
@@ -18097,8 +18107,243 @@
               "updatedAt": "2021-06-30T12:17:27Z"
             }
           ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk2NzcyNDAw",
+          "commit": {
+            "abbreviatedOid": "54cce71"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-07-01T03:11:54Z",
+          "updatedAt": "2021-07-01T03:14:33Z",
+          "comments": [
+            {
+              "originalPosition": 14,
+              "body": "```suggestion\r\n2^(p/2-log_2(Q)/2) bits of memory.\r\n```\r\nPlease double-check.",
+              "createdAt": "2021-07-01T03:11:54Z",
+              "updatedAt": "2021-07-01T03:14:33Z"
+            }
+          ]
         }
       ]
+    },
+    {
+      "number": 255,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjgxODE2NTU4",
+      "title": "Version bump",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/255",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This updates the version string, test vectors, and adds a change log.\r\n\r\ncc @bytemare, @kevinlewi ",
+      "createdAt": "2021-07-01T12:35:05Z",
+      "updatedAt": "2021-07-02T13:40:19Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "6da4ed3071b4eb58278c7091d14b031f2e41683f",
+      "headRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "headRefName": "caw/version-bump",
+      "headRefOid": "3e833943378d87481051e32543e81eab3391978d",
+      "closedAt": "2021-07-02T13:40:19Z",
+      "mergedAt": "2021-07-02T13:40:19Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "16f059c20ea1b8e1f2209f2877c859269c7e7cb4"
+      },
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks, @armfazh! I'm going to park this until @kevinlewi and @bytemare get a chance to take a look.",
+          "createdAt": "2021-07-01T18:46:38Z",
+          "updatedAt": "2021-07-01T18:46:38Z"
+        },
+        {
+          "author": "bytemare",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Vectors are working here \ud83d\ude03 \ud83d\udc4d ",
+          "createdAt": "2021-07-02T01:03:49Z",
+          "updatedAt": "2021-07-02T01:03:49Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk3NDI2ODUx",
+          "commit": {
+            "abbreviatedOid": "3e83394"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Confirmed, test vectors are passing in TS",
+          "createdAt": "2021-07-01T16:09:28Z",
+          "updatedAt": "2021-07-01T16:09:28Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk3NDQ1NTM3",
+          "commit": {
+            "abbreviatedOid": "3e83394"
+          },
+          "author": "alxdavids",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-07-01T16:29:51Z",
+          "updatedAt": "2021-07-01T16:29:51Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 256,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjgyNjU2NDM3",
+      "title": "Move definitions around. Clarify DKP implementation and blinding mode for test vectors.",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/256",
+      "state": "OPEN",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "cc @bytemare, @kevinlewi ",
+      "createdAt": "2021-07-02T14:05:29Z",
+      "updatedAt": "2021-07-02T23:19:53Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "16f059c20ea1b8e1f2209f2877c859269c7e7cb4",
+      "headRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "headRefName": "caw/edits",
+      "headRefOid": "c6f6c72b660df6fa4b816a6bdb6465722be3f3fc",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk4MzcwOTU2",
+          "commit": {
+            "abbreviatedOid": "95db44f"
+          },
+          "author": "alxdavids",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-07-02T17:08:35Z",
+          "updatedAt": "2021-07-02T17:08:35Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk4NDU0MDI5",
+          "commit": {
+            "abbreviatedOid": "95db44f"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "two comments",
+          "createdAt": "2021-07-02T19:30:37Z",
+          "updatedAt": "2021-07-02T19:32:52Z",
+          "comments": [
+            {
+              "originalPosition": 242,
+              "body": "Although it's verbose, it is easier to understand.\r\n\r\n```suggestion\r\nBase mode uses multiplicative blinding while verifiable mode \r\nuses additive blinding, as described in {{base-client}} and \r\n{{verifiable-client}}, respectively.\r\n```",
+              "createdAt": "2021-07-02T19:30:37Z",
+              "updatedAt": "2021-07-02T19:32:53Z"
+            },
+            {
+              "originalPosition": 154,
+              "body": "Either `opaque Proof[2*Ns]` or `SerializedScalar Proof[2]` is correct.",
+              "createdAt": "2021-07-02T19:32:06Z",
+              "updatedAt": "2021-07-02T19:32:53Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk4NDU1Nzg4",
+          "commit": {
+            "abbreviatedOid": "c6f6c72"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-07-02T19:34:10Z",
+          "updatedAt": "2021-07-02T19:34:10Z",
+          "comments": [
+            {
+              "originalPosition": 154,
+              "body": "Sadly, the latter isn\u2019t. The number denotes the byte count, not element count. We were misusing this all along.",
+              "createdAt": "2021-07-02T19:34:10Z",
+              "updatedAt": "2021-07-02T19:34:10Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk4NTM3OTkz",
+          "commit": {
+            "abbreviatedOid": "c6f6c72"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-07-02T23:19:41Z",
+          "updatedAt": "2021-07-02T23:19:41Z",
+          "comments": [
+            {
+              "originalPosition": 154,
+              "body": "It's correct as is. Reference: https://www.rfc-editor.org/rfc/rfc8446.html#section-3.4",
+              "createdAt": "2021-07-02T23:19:41Z",
+              "updatedAt": "2021-07-02T23:19:41Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk4NTM4MDQ4",
+          "commit": {
+            "abbreviatedOid": "c6f6c72"
+          },
+          "author": "armfazh",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-07-02T23:19:53Z",
+          "updatedAt": "2021-07-02T23:19:53Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 257,
+      "id": "MDExOlB1bGxSZXF1ZXN0NjgyOTIzODc2",
+      "title": "Fix link in a reference to ristretto draft.",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/257",
+      "state": "OPEN",
+      "author": "armfazh",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2021-07-02T23:30:34Z",
+      "updatedAt": "2021-07-02T23:30:34Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "16f059c20ea1b8e1f2209f2877c859269c7e7cb4",
+      "headRepository": "armfazh/draft-irtf-cfrg-voprf",
+      "headRefName": "fixLink",
+      "headRefOid": "5da8e9a1eef83e3856546f0127d6d8296314de2c",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
