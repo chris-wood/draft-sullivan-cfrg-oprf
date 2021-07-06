@@ -5,10 +5,10 @@
 Network Working Group                                        A. Davidson
 Internet-Draft                                            Brave Software
 Intended status: Informational                          A. Faz-Hernandez
-Expires: 3 January 2022                                      N. Sullivan
+Expires: 7 January 2022                                      N. Sullivan
                                                                C.A. Wood
                                                               Cloudflare
-                                                             2 July 2021
+                                                             6 July 2021
 
 
    Oblivious Pseudorandom Functions (OPRFs) using Prime-Order Groups
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 3 January 2022.
+   This Internet-Draft will expire on 7 January 2022.
 
 Copyright Notice
 
@@ -70,45 +70,43 @@ Table of Contents
 
    1.  Introduction
      1.1.  Change log
-     1.2.  Terminology
-     1.3.  Requirements
+     1.2.  Requirements
    2.  Preliminaries
      2.1.  Prime-Order Group Dependency
-     2.2.  Other Conventions
-   3.  OPRF Protocol
+     2.2.  Conventions and Terminology
+   3.  (V)OPRF Protocol
      3.1.  Overview
      3.2.  Context Setup
-     3.3.  Data Types
-     3.4.  Context APIs
-       3.4.1.  Server Context
-       3.4.2.  VerifiableServerContext
-       3.4.3.  Client Context
-       3.4.4.  VerifiableClientContext
-   4.  Domain Separation
-   5.  Ciphersuites
-     5.1.  OPRF(ristretto255, SHA-512)
-     5.2.  OPRF(decaf448, SHAKE-256)
-     5.3.  OPRF(P-256, SHA-256)
-     5.4.  OPRF(P-384, SHA-512)
-     5.5.  OPRF(P-521, SHA-512)
-   6.  API Considerations
-   7.  Security Considerations
-     7.1.  Security Properties
-     7.2.  Cryptographic Security
-       7.2.1.  Computational Hardness Assumptions
-       7.2.2.  Protocol Security
-       7.2.3.  Q-Strong-DH Oracle
-       7.2.4.  Implications for Ciphersuite Choices
-     7.3.  Element and Scalar Validation
-     7.4.  Hashing to Group
-     7.5.  Blinding Considerations
-     7.6.  Timing Leaks
-     7.7.  Key Rotation
-       7.7.1.  Parameter Commitments
-   8.  Acknowledgements
-   9.  References
-     9.1.  Normative References
-     9.2.  Informative References
+     3.3.  Context APIs
+       3.3.1.  Server Context
+       3.3.2.  VerifiableServerContext
+       3.3.3.  Client Context
+       3.3.4.  VerifiableClientContext
+   4.  Ciphersuites
+     4.1.  OPRF(ristretto255, SHA-512)
+     4.2.  OPRF(decaf448, SHAKE-256)
+     4.3.  OPRF(P-256, SHA-256)
+     4.4.  OPRF(P-384, SHA-512)
+     4.5.  OPRF(P-521, SHA-512)
+   5.  API Considerations
+   6.  Security Considerations
+     6.1.  Security Properties
+     6.2.  Cryptographic Security
+       6.2.1.  Computational Hardness Assumptions
+       6.2.2.  Protocol Security
+       6.2.3.  Q-Strong-DH Oracle
+       6.2.4.  Implications for Ciphersuite Choices
+     6.3.  Domain Separation
+     6.4.  Element and Scalar Validation
+     6.5.  Hashing to Group
+     6.6.  Blinding Considerations
+     6.7.  Timing Leaks
+     6.8.  Key Rotation
+       6.8.1.  Parameter Commitments
+   7.  Acknowledgements
+   8.  References
+     8.1.  Normative References
+     8.2.  Informative References
    Appendix A.  Test Vectors
      A.1.  OPRF(ristretto255, SHA-512)
        A.1.1.  Base Mode
@@ -267,27 +265,7 @@ Table of Contents
 
    *  Made some necessary modular reductions more explicit.
 
-1.2.  Terminology
-
-   The following terms are used throughout this document.
-
-   *  PRF: Pseudorandom Function.
-
-   *  OPRF: Oblivious Pseudorandom Function.
-
-   *  VOPRF: Verifiable Oblivious Pseudorandom Function.
-
-   *  Client: Protocol initiator.  Learns pseudorandom function
-      evaluation as the output of the protocol.
-
-   *  Server: Computes the pseudorandom function over a secret key.
-      Learns nothing about the client's input.
-
-   *  NIZK: Non-interactive zero knowledge.
-
-   *  DLEQ: Discrete Logarithm Equality.
-
-1.3.  Requirements
+1.2.  Requirements
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
@@ -301,12 +279,12 @@ Table of Contents
 
    *  "GG": A prime-order group implementing the API described below in
       Section 2.1, with base point defined in the corresponding
-      reference for each group.  (See Section 5 for these base points.)
+      reference for each group.  (See Section 4 for these base points.)
 
    *  "Hash": A cryptographic hash function that is indifferentiable
       from a Random Oracle, whose output length is Nh bytes long.
 
-   Section 5 specifies ciphersuites as combinations of "GG" and "Hash".
+   Section 4 specifies ciphersuites as combinations of "GG" and "Hash".
 
 2.1.  Prime-Order Group Dependency
 
@@ -328,7 +306,9 @@ Table of Contents
    the fixed generator of the group.  Scalar base multiplication is
    equivalent to the repeated application of the group operation "G"
    with itself "r-1" times, this is denoted as "ScalarBaseMult(r)".  The
-   set of scalars corresponds to "GF(p)".
+   set of scalars corresponds to "GF(p)".  This document uses types
+   "Element" and "Scalar" to denote elements of the group "GG" and its
+   set of scalars, respectively.
 
    We now detail a number of member functions that can be invoked on a
    prime-order group "GG".
@@ -340,36 +320,35 @@ Table of Contents
    *  HashToGroup(x): A member function of "GG" that deterministically
       maps an array of bytes "x" to an element of "GG".  The map must
       ensure that, for any adversary receiving "R = HashToGroup(x)", it
-      is computationally difficult to reverse the mapping.  Examples of
-      hash to group functions satisfying this property are described for
-      prime-order (sub)groups of elliptic curves, see
-      [I-D.irtf-cfrg-hash-to-curve].
+      is computationally difficult to reverse the mapping.  This
+      function is optionally parameterized by a domain separation tag
+      (DST); see Section 4.
 
    *  HashToScalar(x): A member function of "GG" that deterministically
-      maps an array of bytes "x" to an element in GF(p).  A recommended
-      method for its implementation is instantiating the hash to field
-      function, defined in [I-D.irtf-cfrg-hash-to-curve] setting the
-      target field to GF(p).
+      maps an array of bytes "x" to an element in GF(p).  This function
+      is optionally parameterized by a DST; see Section 4.
 
    *  RandomScalar(): A member function of "GG" that chooses at random a
       non-zero element in GF(p).
 
    *  SerializeElement(A): A member function of "GG" that maps a group
       element "A" to a unique byte array "buf" of fixed length "Ne".
+      The output type of this function is "SerializedElement".
 
    *  DeserializeElement(buf): A member function of "GG" that maps a
       byte array "buf" to a group element "A", or fails if the input is
       not a valid byte representation of an element.  This function can
       raise a DeserializeError if deserialization fails or "A" is the
-      identity element of the group; see Section 7.3.
+      identity element of the group; see Section 6.4.
 
    *  SerializeScalar(s): A member function of "GG" that maps a scalar
       element "s" to a unique byte array "buf" of fixed length "Ns".
+      The output type of this function is "SerializedScalar".
 
    *  DeserializeScalar(buf): A member function of "GG" that maps a byte
       array "buf" to a scalar "s", or fails if the input is not a valid
       byte representation of a scalar.  This function can raise a
-      DeserializeError if deserialization fails; see Section 7.3.
+      DeserializeError if deserialization fails; see Section 6.4.
 
    Two functions can be used for generating a (V)OPRF key pair ("skS",
    "pkS") where "skS" is a non-zero integer less than "p" and "pkS =
@@ -377,7 +356,7 @@ Table of Contents
    "GenerateKeyPair" is a randomized function that outputs a fresh key
    pair ("skS", "pkS") upon ever invocation.  "DeriveKeyPair" is a
    deterministic function that generates private key "skS" from a random
-   byte string "seed" that SHOULD have at least "Ns" bytes of entropy,
+   byte string "seed", which SHOULD have at least "Ns" bytes of entropy,
    and then computes "pkS = ScalarBaseMult(skS)".
 
    It is convenient in cryptographic applications to instantiate such
@@ -387,13 +366,15 @@ Table of Contents
    implementation issues that introduce inherent discrepancies between
    standard prime-order groups and the elliptic curve instantiation.  In
    this document, all algorithms that we detail assume that the group is
-   a prime-order group, and this MUST be upheld by any implementer.
+   a prime-order group, and this MUST be upheld by any implementation.
    That is, any curve instantiation should be written such that any
    discrepancies with a prime-order group instantiation are removed.
-   See Section 5 for advice corresponding to the implementation of this
+   See Section 4 for advice corresponding to the implementation of this
    interface for specific definitions of elliptic curves.
 
-2.2.  Other Conventions
+2.2.  Conventions and Terminology
+
+   The following conventions are used throughout the document.
 
    *  For any object "x", we write "len(x)" to denote its length in
       bytes.
@@ -405,12 +386,32 @@ Table of Contents
       integer as described in [RFC8017].  Note that these functions
       operate on byte arrays in big-endian byte order.
 
+   Data structure descriptions use TLS notation [RFC8446], Section 3.
+
    All algorithm descriptions are written in a Python-like pseudocode.
    We also use the "CT_EQUAL(a, b)" function to represent constant-time
    byte-wise equality between byte arrays "a" and "b".  This function
    returns "true" if "a" and "b" are equal, and "false" otherwise.
 
-3.  OPRF Protocol
+   The following terms are used throughout this document.
+
+   *  PRF: Pseudorandom Function.
+
+   *  OPRF: Oblivious Pseudorandom Function.
+
+   *  VOPRF: Verifiable Oblivious Pseudorandom Function.
+
+   *  Client: Protocol initiator.  Learns pseudorandom function
+      evaluation as the output of the protocol.
+
+   *  Server: Computes the pseudorandom function over a secret key.
+      Learns nothing about the client's input.
+
+   *  NIZK: Non-interactive zero knowledge.
+
+   *  DLEQ: Discrete Logarithm Equality.
+
+3.  (V)OPRF Protocol
 
    In this section, we define two OPRF variants: a base mode and
    verifiable mode.  In the base mode, a client and server interact to
@@ -506,32 +507,13 @@ Table of Contents
      return VerifiableClientContext(contextString, pkS)
 
    Each setup function takes a ciphersuite from the list defined in
-   Section 5.  Each ciphersuite has a two-byte field ID used to identify
+   Section 4.  Each ciphersuite has a two-byte field ID used to identify
    the suite.
 
    [[RFC editor: please change "VOPRF07" to "RFCXXXX", where XXXX is the
    final number, here and elsewhere before publication.]]
 
-3.3.  Data Types
-
-   The following is a list of data structures that are defined for
-   providing inputs and outputs for each of the context interfaces
-   defined in Section 3.4.  Data structure description uses TLS notation
-   (see [RFC8446], Section 3).
-
-   This document uses the types "Element" and "Scalar" to denote
-   elements of the group "GG" and its underlying scalar field "GF(p)",
-   respectively.  For notational clarity, "PublicKey" is an item of type
-   "Element" and "PrivateKey" is an item of type "Scalar".
-   "SerializedElement" and "SerializedScalar" are serialized
-   representations of "Element" and "Scalar" types of length "Ne" and
-   "Ns", respectively; see Section 2.1.  "ClientInput" is an opaque byte
-   string of arbitrary length.  "Proof" is a sequence of two
-   "SerializedScalar" elements, as shown below.
-
-   SerializedScalar Proof[2];
-
-3.4.  Context APIs
+3.3.  Context APIs
 
    In this section, we detail the APIs available on the client and
    server (V)OPRF contexts.  Each API has the following implicit
@@ -543,7 +525,13 @@ Table of Contents
    *  contextString, a domain separation tag taken from the client or
       server context.
 
-3.4.1.  Server Context
+   The data type "ClientInput" is an opaque byte string of arbitrary
+   length no larger than 2^13 octets.  "Proof" is a concatenated
+   sequence of two "SerializedScalar" values, as shown below.
+
+   SerializedScalar Proof[2*Ns];
+
+3.3.1.  Server Context
 
    The ServerContext encapsulates the context string constructed during
    setup and the (V)OPRF key pair.  It has three functions, "Evaluate",
@@ -563,11 +551,11 @@ Table of Contents
    main OPRF protocol.  They are exposed as an API for building higher-
    level protocols.
 
-3.4.1.1.  Evaluate
+3.3.1.1.  Evaluate
 
    Input:
 
-     PrivateKey skS
+     Scalar skS
      SerializedElement blindedElement
 
    Output:
@@ -583,11 +571,11 @@ Table of Contents
 
      return evaluatedElement
 
-3.4.1.2.  FullEvaluate
+3.3.1.2.  FullEvaluate
 
    Input:
 
-     PrivateKey skS
+     Scalar skS
      ClientInput input
 
    Output:
@@ -606,11 +594,11 @@ Table of Contents
 
      return Hash(hashInput)
 
-3.4.1.3.  VerifyFinalize
+3.3.1.3.  VerifyFinalize
 
    Input:
 
-     PrivateKey skS
+     Scalar skS
      ClientInput input
      opaque output[Nh]
 
@@ -633,19 +621,19 @@ Table of Contents
 
      return CT_EQUAL(digest, output)
 
-3.4.2.  VerifiableServerContext
+3.3.2.  VerifiableServerContext
 
    The VerifiableServerContext extends the base ServerContext with an
    augmented "Evaluate()" function.  This function produces a proof that
    "skS" was used in computing the result.  It makes use of the helper
    functions "GenerateProof" and "ComputeComposites", described below.
 
-3.4.2.1.  Evaluate
+3.3.2.1.  Evaluate
 
    Input:
 
-     PrivateKey skS
-     PublicKey pkS
+     Scalar skS
+     Element pkS
      SerializedElement blindedElement
 
    Output:
@@ -667,7 +655,7 @@ Table of Contents
    The helper functions "GenerateProof" and "ComputeComposites" are
    defined below.
 
-3.4.2.2.  GenerateProof
+3.3.2.2.  GenerateProof
 
    Input:
 
@@ -712,7 +700,7 @@ Table of Contents
 
      return proof
 
-3.4.2.2.1.  Batching inputs
+3.3.2.2.1.  Batching inputs
 
    Unlike other functions, "ComputeComposites" takes lists of inputs,
    rather than a single input.  Applications can take advantage of this
@@ -727,14 +715,14 @@ Table of Contents
    it amortizes the cost of proof generation and bandwidth across
    multiple requests.
 
-3.4.2.2.2.  Fresh Randomness
+3.3.2.2.2.  Fresh Randomness
 
    We note here that it is essential that a different "r" value is used
    for every invocation.  If this is not done, then this may leak "skS"
    as is possible in Schnorr or (EC)DSA scenarios where fresh randomness
    is not used.
 
-3.4.2.3.  ComputeComposites
+3.3.2.3.  ComputeComposites
 
    The definition of "ComputeComposites" is given below.  This function
    is used both on generation and verification of the proof.
@@ -811,7 +799,7 @@ Table of Contents
 
     return [M, Z]
 
-3.4.3.  Client Context
+3.3.3.  Client Context
 
    The ClientContext encapsulates the context string constructed during
    setup.  It has two functions, "Blind()" and "Finalize()", as
@@ -819,11 +807,11 @@ Table of Contents
    which is used by "Finalize".  The implementation of these functions
    varies depending on the mode.
 
-3.4.3.1.  Blind
+3.3.3.1.  Blind
 
    In this mode, blinding is done multiplicatively.  Under certain
    application circumstances, the more optimal additive blinding
-   mechanism described in Section 3.4.4.2 can be used.  See Section 7.5
+   mechanism described in Section 3.3.4.2 can be used.  See Section 6.6
    for more details.
 
    "Blind" is implemented as follows.
@@ -864,12 +852,12 @@ Table of Contents
 
      return unblindedElement
 
-3.4.3.2.  Finalize
+3.3.3.2.  Finalize
 
    "Finalize" depends on the internal "Unblind" function.  In this mode,
    "Finalize" and does not include all inputs listed in Section 3.1.
    These additional inputs are only useful for the verifiable mode,
-   described in Section 3.4.4.3.
+   described in Section 3.3.4.3.
 
    Input:
 
@@ -890,7 +878,7 @@ Table of Contents
                  I2OSP(len(finalizeDST), 2) || finalizeDST
      return Hash(hashInput)
 
-3.4.4.  VerifiableClientContext
+3.3.4.  VerifiableClientContext
 
    The VerifiableClientContext extends the base ClientContext with the
    desired server public key "pkS" with an augmented "Unblind()"
@@ -898,7 +886,7 @@ Table of Contents
    It makes use of the helper function "ComputeComposites" described
    above.  It has one helper function, "VerifyProof()", defined below.
 
-3.4.4.1.  VerifyProof
+3.3.4.1.  VerifyProof
 
    This algorithm outputs a boolean "verified" which indicates whether
    the proof inside of the evaluation verifies correctly, or not.
@@ -946,7 +934,7 @@ Table of Contents
 
      return CT_EQUAL(expectedC, c)
 
-3.4.4.2.  Verifiable Blind
+3.3.4.2.  Verifiable Blind
 
    In this mode, where the server public key is available for proof
    verification, blinding is done additively.  This variant is named
@@ -1026,7 +1014,7 @@ Table of Contents
 
      return blindedGenerator, blindedPublicKey, blind
 
-3.4.4.3.  Verifiable Finalize
+3.3.4.3.  Verifiable Finalize
 
    Input:
 
@@ -1053,15 +1041,7 @@ Table of Contents
                  I2OSP(len(finalizeDST), 2) || finalizeDST
      return Hash(hashInput)
 
-4.  Domain Separation
-
-   Applications SHOULD construct input to the protocol to provide domain
-   separation.  Any system which has multiple (V)OPRF applications
-   should distinguish client inputs to ensure the OPRF results are
-   separate.  Guidance for constructing info can be found in
-   [I-D.irtf-cfrg-hash-to-curve]; Section 3.1.
-
-5.  Ciphersuites
+4.  Ciphersuites
 
    A ciphersuite (also referred to as 'suite' in this document) for the
    protocol wraps the functionality required for the protocol to take
@@ -1088,9 +1068,9 @@ Table of Contents
    computed in the Setup functions.
 
    Applications should take caution in using ciphersuites targeting
-   P-256 and ristretto255.  See Section 7.2 for related discussion.
+   P-256 and ristretto255.  See Section 6.2 for related discussion.
 
-5.1.  OPRF(ristretto255, SHA-512)
+4.1.  OPRF(ristretto255, SHA-512)
 
    *  Group: ristretto255 [RISTRETTO]
 
@@ -1114,7 +1094,7 @@ Table of Contents
 
    *  ID: 0x0001
 
-5.2.  OPRF(decaf448, SHAKE-256)
+4.2.  OPRF(decaf448, SHAKE-256)
 
    *  Group: decaf448 [RISTRETTO]
 
@@ -1138,7 +1118,7 @@ Table of Contents
 
    *  ID: 0x0002
 
-5.3.  OPRF(P-256, SHA-256)
+4.3.  OPRF(P-256, SHA-256)
 
    *  Group: P-256 (secp256r1) [x9.62]
 
@@ -1160,7 +1140,7 @@ Table of Contents
 
    *  ID: 0x0003
 
-5.4.  OPRF(P-384, SHA-512)
+4.4.  OPRF(P-384, SHA-512)
 
    *  Group: P-384 (secp384r1) [x9.62]
 
@@ -1182,7 +1162,7 @@ Table of Contents
 
    *  ID: 0x0004
 
-5.5.  OPRF(P-521, SHA-512)
+4.5.  OPRF(P-521, SHA-512)
 
    *  Group: P-521 (secp521r1) [x9.62]
 
@@ -1204,7 +1184,7 @@ Table of Contents
 
    *  ID: 0x0005
 
-6.  API Considerations
+5.  API Considerations
 
    Some VOPRF APIs specified in this document are fallible.  For
    example, "Finalize" and "Evaluate" can fail if any element received
@@ -1212,7 +1192,7 @@ Table of Contents
    throughout this specification, along with the conditions that lead to
    each error, are as follows:
 
-   *  "VerifyError": VOPRF proof verification failed; Section 3.4.4.2.
+   *  "VerifyError": VOPRF proof verification failed; Section 3.3.4.2.
 
    *  "DeserializeError": Group element or scalar deserialization
       failure; Section 2.1.
@@ -1222,13 +1202,13 @@ Table of Contents
    might emit.  For example, implementations might run out of memory and
    return a corresponding error.
 
-7.  Security Considerations
+6.  Security Considerations
 
    This section discusses the cryptographic security of our protocol,
    along with some suggestions and trade-offs that arise from the
    implementation of an OPRF.
 
-7.1.  Security Properties
+6.1.  Security Properties
 
    The security properties of an OPRF protocol with functionality y =
    F(k, x) include those of a standard PRF.  Specifically:
@@ -1276,13 +1256,13 @@ Table of Contents
    In the following, we may also refer to this commitment as a public
    key.
 
-7.2.  Cryptographic Security
+6.2.  Cryptographic Security
 
    Below, we discuss the cryptographic security of the (V)OPRF protocol
    from Section 3, relative to the necessary cryptographic assumptions
    that need to be made.
 
-7.2.1.  Computational Hardness Assumptions
+6.2.1.  Computational Hardness Assumptions
 
    Each assumption states that the problems specified below are
    computationally difficult to solve in relation to a particular choice
@@ -1291,11 +1271,11 @@ Table of Contents
    Let GG = GG(sp) be a group with prime-order p, and let GF(p) be a
    finite field of order p.
 
-7.2.1.1.  Discrete-log (DL) Problem
+6.2.1.1.  Discrete-log (DL) Problem
 
    Given G, a generator of GG, and H = hG for some h in GF(p); output h.
 
-7.2.1.2.  Decisional Diffie-Hellman (DDH) Problem
+6.2.1.2.  Decisional Diffie-Hellman (DDH) Problem
 
    Sample uniformly at random d in {0,1}. Given (G, aG, bG, C), where
 
@@ -1308,7 +1288,7 @@ Table of Contents
 
    Output d' == d.
 
-7.2.2.  Protocol Security
+6.2.2.  Protocol Security
 
    Our OPRF construction is based on the VOPRF construction known as
    2HashDH-NIZK given by [JKK14]; essentially without providing zero-
@@ -1340,10 +1320,10 @@ Table of Contents
 
    The original paper [JKK14] gives a security proof that the 2HashDH-
    NIZK construction satisfies the security guarantees of a VOPRF
-   protocol Section 7.1 under the OMDH assumption in the universal
+   protocol Section 6.1 under the OMDH assumption in the universal
    composability (UC) security model.
 
-7.2.3.  Q-Strong-DH Oracle
+6.2.3.  Q-Strong-DH Oracle
 
    A side-effect of our OPRF design is that it allows instantiation of a
    oracle for constructing Q-strong-DH (Q-sDH) samples.  The Q-Strong-DH
@@ -1382,7 +1362,7 @@ Table of Contents
    if they can distinguish the OPRF interaction from a protocol that
    computes the ideal functionality provided by the PRF.
 
-7.2.4.  Implications for Ciphersuite Choices
+6.2.4.  Implications for Ciphersuite Choices
 
    The OPRF instantiations that we recommend in this document are
    informed by the cryptanalytic discussion above.  In particular,
@@ -1402,7 +1382,15 @@ Table of Contents
    bits, we recommend only implementing ciphersuites with IDs 0x0002,
    0x0004, and 0x0005.
 
-7.3.  Element and Scalar Validation
+6.3.  Domain Separation
+
+   Applications SHOULD construct input to the protocol to provide domain
+   separation.  Any system which has multiple (V)OPRF applications
+   should distinguish client inputs to ensure the OPRF results are
+   separate.  Guidance for constructing info can be found in
+   [I-D.irtf-cfrg-hash-to-curve]; Section 3.1.
+
+6.4.  Element and Scalar Validation
 
    The DeserializeElement function recovers a group element from an
    arbitrary byte array.  This function validates that the element is a
@@ -1418,8 +1406,9 @@ Table of Contents
 
    For ristretto255 and decaf448, elements are deserialized by invoking
    the Decode function from [RISTRETTO], Section 4.3.1 and [RISTRETTO],
-   respectively, which returns false if the element is invalid.  If this
-   function returns false, deserialization returns an error.
+   Section 5.3.1, respectively, which returns false if the element is
+   invalid.  If this function returns false, deserialization returns an
+   error.
 
    The DeserializeScalar function recovers a scalar field element from
    an arbitrary byte array.  Like DeserializeElement, this function
@@ -1432,7 +1421,7 @@ Table of Contents
    that the input, when treated as a little-endian integer, is a valud
    between 0 and "Order()".
 
-7.4.  Hashing to Group
+6.5.  Hashing to Group
 
    A critical requirement of implementing the prime-order group using
    elliptic curves is a method to instantiate the function
@@ -1442,14 +1431,14 @@ Table of Contents
 
    In the security proof of the construction Hash is modeled as a random
    oracle.  This implies that any instantiation of "GG.HashToGroup" must
-   be pre-image and collision resistant.  In Section 5 we give
+   be pre-image and collision resistant.  In Section 4 we give
    instantiations of this functionality based on the functions described
    in [I-D.irtf-cfrg-hash-to-curve].  Consequently, any OPRF
    implementation must adhere to the implementation and security
    considerations discussed in [I-D.irtf-cfrg-hash-to-curve] when
    instantiating the function.
 
-7.5.  Blinding Considerations
+6.6.  Blinding Considerations
 
    This document makes use of two types of blinding variants:
    multiplicative and additive.  The advantage of additive blinding is
@@ -1487,7 +1476,7 @@ Table of Contents
    blinding variant, as the public key is always available for verifying
    the proof.
 
-7.6.  Timing Leaks
+6.7.  Timing Leaks
 
    To ensure no information is leaked during protocol execution, all
    operations that use secret data MUST run in constant time.
@@ -1495,20 +1484,20 @@ Table of Contents
    group operations and proof-specific operations ("GenerateProof()" and
    "VerifyProof()").
 
-7.7.  Key Rotation
+6.8.  Key Rotation
 
    Since the server's key is critical to security, the longer it is
    exposed by performing (V)OPRF operations on client inputs, the longer
    it is possible that the key can be compromised.  For example, if the
    key is kept in circulation for a long period of time, then it also
    allows the clients to make enough queries to launch more powerful
-   variants of the Q-sDH attacks from Section 7.2.3.
+   variants of the Q-sDH attacks from Section 6.2.3.
 
    To combat attacks of this nature, regular key rotation should be
    employed on the server-side.  A suitable key-cycle for a key used to
    compute (V)OPRF evaluations would be between one week and six months.
 
-7.7.1.  Parameter Commitments
+6.8.1.  Parameter Commitments
 
    For some applications, it may be desirable for the server to bind
    tokens to certain parameters, e.g., protocol versions, ciphersuites,
@@ -1517,7 +1506,7 @@ Table of Contents
    client, the server can later verify that T was generated using the
    scalar associated with the corresponding parameters.
 
-8.  Acknowledgements
+7.  Acknowledgements
 
    This document resulted from the work of the Privacy Pass team
    [PrivacyPass].  The authors would also like to acknowledge helpful
@@ -1526,9 +1515,9 @@ Table of Contents
    Tatiana Bradley, Sofia Celi, Frank Denis, and Bas Westerbaan also
    provided helpful input and contributions to the document.
 
-9.  References
+8.  References
 
-9.1.  Normative References
+8.1.  Normative References
 
    [BB04]     "Short Signatures Without Random Oracles",
               <http://ai.stanford.edu/~xb/eurocrypt04a/bbsigs.pdf>.
@@ -1548,21 +1537,21 @@ Table of Contents
               Davidson, A., "Privacy Pass: The Protocol", Work in
               Progress, Internet-Draft, draft-davidson-pp-protocol-01,
               13 July 2020, <https://datatracker.ietf.org/doc/html/
-              draft-davidson-pp-protocol-01.txt>.
+              draft-davidson-pp-protocol-01>.
 
    [I-D.irtf-cfrg-hash-to-curve]
               Faz-Hernandez, A., Scott, S., Sullivan, N., Wahby, R. S.,
               and C. A. Wood, "Hashing to Elliptic Curves", Work in
               Progress, Internet-Draft, draft-irtf-cfrg-hash-to-curve-
               11, 13 April 2021, <https://datatracker.ietf.org/doc/html/
-              draft-irtf-cfrg-hash-to-curve-11.txt>.
+              draft-irtf-cfrg-hash-to-curve-11>.
 
    [I-D.irtf-cfrg-opaque]
               Krawczyk, H., Bourdrez, D., Lewi, K., and C. A. Wood, "The
               OPAQUE Asymmetric PAKE Protocol", Work in Progress,
               Internet-Draft, draft-irtf-cfrg-opaque-05, 7 June 2021,
               <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
-              opaque-05.txt>.
+              opaque-05>.
 
    [JKK14]    "Round-Optimal Password-Protected Secret Sharing and
               T-PAKE in the Password-Only model",
@@ -1600,7 +1589,7 @@ Table of Contents
               decaf448 Groups", Work in Progress, Internet-Draft, draft-
               irtf-cfrg-ristretto255-decaf448-00, 5 October 2020,
               <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
-              ristretto255-decaf448-00.txt>.
+              ristretto255-decaf448-00>.
 
    [SEC1]     Standards for Efficient Cryptography Group (SECG), ., "SEC
               1: Elliptic Curve Cryptography",
@@ -1617,7 +1606,7 @@ Table of Contents
               Industry: the Elliptic Curve Digital Signature Algorithm
               (ECDSA)", ANSI X9.62-1998, September 1998.
 
-9.2.  Informative References
+8.2.  Informative References
 
    [JKX21]    Jarecki, S., Krawczyk, H., and J. Xu, "On the (In)Security
               of the Diffie-Hellman Oblivious PRF with Multiplicative
@@ -1639,7 +1628,7 @@ Table of Contents
 Appendix A.  Test Vectors
 
    This section includes test vectors for the (V)OPRF protocol specified
-   in this document.  For each ciphersuite specified in Section 5, there
+   in this document.  For each ciphersuite specified in Section 4, there
    is a set of test vectors for the protocol when run in the base mode
    and verifiable mode.  Each test vector lists the batch size for the
    evaluation.  Each test vector value is encoded as a hexadecimal byte
@@ -1671,10 +1660,20 @@ Appendix A.  Test Vectors
    "Input", "Blind", "BlindedElement", "EvaluationElement", and "Output"
    fields.
 
+   Base mode uses multiplicative blinding while verifiable mode uses
+   additive blinding, as described in Section 3.3.3 and Section 3.3.4,
+   respectively.
+
    The server key material, "pkSm" and "skSm", are listed under the mode
    for each ciphersuite.  Both "pkSm" and "skSm" are the serialized
    values of "pkS" and "skS", respectively, as used in the protocol.
-   Each key pair is derived from a "seed", which is listed as well.
+   Each key pair is derived from a "seed", which is listed as well,
+   using the following implementation of "DeriveKeyPair":
+
+   def DeriveKeyPair(mode, suite, seed):
+     skS = GG.HashToScalar(seed, DST = "HashToScalar-" || contextString)
+     pkS = ScalarBaseMult(skS)
+     return skS, pkS
 
 A.1.  OPRF(ristretto255, SHA-512)
 
