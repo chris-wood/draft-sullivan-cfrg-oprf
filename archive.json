@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-07-04T00:36:12.081132+00:00",
+  "timestamp": "2021-07-08T00:34:26.363084+00:00",
   "repo": "cfrg/draft-irtf-cfrg-voprf",
   "labels": [
     {
@@ -3746,6 +3746,30 @@
       "updatedAt": "2021-06-16T23:21:16Z",
       "closedAt": "2021-06-16T23:21:16Z",
       "comments": []
+    },
+    {
+      "number": 259,
+      "id": "MDU6SXNzdWU5MzkxODI0NTY=",
+      "title": "Add the possibility of adding public metadata to the PRF evaluation",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/issues/259",
+      "state": "OPEN",
+      "author": "claucece",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Public metadata is useful for applications like OPAQUE or Privacy Pass.\r\n\r\nIt will be good to add the algorithm defined here: https://eprint.iacr.org/2021/864.pdf\r\n\r\ncc./ @chris-wood @alxdavids ",
+      "createdAt": "2021-07-07T19:10:51Z",
+      "updatedAt": "2021-07-07T19:11:23Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "claucece",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Related: https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/258",
+          "createdAt": "2021-07-07T19:11:13Z",
+          "updatedAt": "2021-07-07T19:11:13Z"
+        }
+      ]
     }
   ],
   "pulls": [
@@ -18205,24 +18229,26 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NjgyNjU2NDM3",
       "title": "Move definitions around. Clarify DKP implementation and blinding mode for test vectors.",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/256",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "cc @bytemare, @kevinlewi ",
       "createdAt": "2021-07-02T14:05:29Z",
-      "updatedAt": "2021-07-02T23:19:53Z",
+      "updatedAt": "2021-07-06T12:45:36Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "16f059c20ea1b8e1f2209f2877c859269c7e7cb4",
       "headRepository": "cfrg/draft-irtf-cfrg-voprf",
       "headRefName": "caw/edits",
       "headRefOid": "c6f6c72b660df6fa4b816a6bdb6465722be3f3fc",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2021-07-06T12:45:35Z",
+      "mergedAt": "2021-07-06T12:45:35Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "272bfe7c37e87b188a6832e3ccfc884a94477cae"
+      },
       "comments": [],
       "reviews": [
         {
@@ -18324,20 +18350,62 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NjgyOTIzODc2",
       "title": "Fix link in a reference to ristretto draft.",
       "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/257",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "armfazh",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2021-07-02T23:30:34Z",
-      "updatedAt": "2021-07-02T23:30:34Z",
+      "updatedAt": "2021-07-06T12:46:02Z",
       "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
       "baseRefName": "master",
       "baseRefOid": "16f059c20ea1b8e1f2209f2877c859269c7e7cb4",
       "headRepository": "armfazh/draft-irtf-cfrg-voprf",
       "headRefName": "fixLink",
       "headRefOid": "5da8e9a1eef83e3856546f0127d6d8296314de2c",
+      "closedAt": "2021-07-06T12:46:02Z",
+      "mergedAt": "2021-07-06T12:46:02Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "24a7d4d1a22d7cd796b3d1b427d43d347fb8a217"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Njk5OTA3MjE5",
+          "commit": {
+            "abbreviatedOid": "5da8e9a"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-07-06T12:45:58Z",
+          "updatedAt": "2021-07-06T12:45:58Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 258,
+      "id": "MDExOlB1bGxSZXF1ZXN0Njg1MzI4Mjg3",
+      "title": "Add metadata mode",
+      "url": "https://github.com/cfrg/draft-irtf-cfrg-voprf/pull/258",
+      "state": "OPEN",
+      "author": "claucece",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Still WIP, waiting for a discussion around additive mode.",
+      "createdAt": "2021-07-07T16:09:13Z",
+      "updatedAt": "2021-07-07T23:05:33Z",
+      "baseRepository": "cfrg/draft-irtf-cfrg-voprf",
+      "baseRefName": "master",
+      "baseRefOid": "24a7d4d1a22d7cd796b3d1b427d43d347fb8a217",
+      "headRepository": "claucece/draft-irtf-cfrg-voprf",
+      "headRefName": "master",
+      "headRefOid": "ce6c4af2c14578f0c7971f11b38b6f1d9c3ba7f7",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
