@@ -45,6 +45,7 @@ author:
 normative:
   RFC2119:
   RFC7748:
+  RFC8446:
   PrivacyPass:
     title: Privacy Pass
     target: https://github.com/privacypass/challenge-bypass-server
@@ -408,7 +409,7 @@ The following conventions are used throughout the document.
   integer as described in {{!RFC8017}}. Note that these functions
   operate on byte arrays in big-endian byte order.
 
-Data structure descriptions use TLS notation {{?RFC8446, Section 3}}.
+Data structure descriptions use TLS notation {{RFC8446, Section 3}}.
 
 All algorithm descriptions are written in a Python-like pseudocode.
 We also use the `CT_EQUAL(a, b)` function to represent constant-time
@@ -1495,7 +1496,7 @@ This document resulted from the work of the Privacy Pass team
 {{PrivacyPass}}. The authors would also like to acknowledge helpful
 conversations with Hugo Krawczyk. Eli-Shaoul Khedouri provided
 additional review and comments on key consistency. Daniel Bourdrez,
-Tatiana Bradley, Sofía Celi, Frank Denis, and Bas Westerbaan also
+Tatiana Bradley, Sofia Celi, Frank Denis, and Bas Westerbaan also
 provided helpful input and contributions to the document.
 
 --- back
@@ -1529,8 +1530,8 @@ Test vectors with batch size B > 1 have inputs separated by a comma
 "Input", "Blind", "BlindedElement", "EvaluationElement", and
 "Output" fields.
 
-Base mode uses multiplicative blinding while verifiable mode 
-uses additive blinding, as described in {{base-client}} and 
+Base mode uses multiplicative blinding while verifiable mode
+uses additive blinding, as described in {{base-client}} and
 {{verifiable-client}}, respectively.
 
 The server key material, `pkSm` and `skSm`, are listed under the mode for

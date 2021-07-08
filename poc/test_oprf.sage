@@ -96,7 +96,7 @@ class Protocol(object):
 
             outputs = client.finalize_batch(xs, blinds, evaluated_elements, blinded_elements, proof)
             for i, output in enumerate(outputs):
-                assert(server.verify_finalize(xs[i], output))
+                assert(server.verify_finalize(xs[i], output)) 
 
             vector = {}
             vector["Blind"] = ",".join([to_hex(group.serialize_scalar(blind)) for blind in blinds])
