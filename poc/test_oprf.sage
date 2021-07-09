@@ -40,6 +40,7 @@ test_suites = [
 class Protocol(object):
     def __init__(self, suite, mode):
         self.inputs = [b'\x00', b'\x5A'*17]
+        self.tags = [b'\x00', b'\x5A'*17]
         self.suite = suite
         self.mode = mode
 
@@ -59,12 +60,12 @@ class Protocol(object):
         client = self.client
         server = self.server
 
-        def create_test_vector_for_input(x):
-            blind, blinded_element = client.blind(x)
-            evaluated_element, proof, proof_randomness = server.evaluate(blinded_element)
-            output = client.finalize(x, blind, evaluated_element, blinded_element, proof)
+        def create_test_vector_for_input(x, y):
+            blind, blinded_element, cTag = client.blind(x, y)
+            evaluated_element, proof, proof_randomness, sTag = server.evaluate(blinded_element, cTag, y)
+            output = client.finalize(x, blind, evaluated_element, blinded_element, proof, sTag, cTag)
 
-            assert(server.verify_finalize(x, output))
+            assert(server.verify_finalize(x, output, cTag, sTag))
 
             vector = {}
             vector["Blind"] = to_hex(group.serialize_scalar(blind))
@@ -84,11 +85,11 @@ class Protocol(object):
 
             return vector
 
-        def create_batched_test_vector_for_inputs(xs):
+        def create_batched_test_vector_for_inputs(xs, y):
             blinds = []
             blinded_elements = []
             for x in xs:
-                blind, blinded_element = client.blind(x)
+                blind, blinded_element, tag = client.blind(x, y)
                 blinds.append(blind)
                 blinded_elements.append(blinded_element)
 
@@ -96,7 +97,7 @@ class Protocol(object):
 
             outputs = client.finalize_batch(xs, blinds, evaluated_elements, blinded_elements, proof)
             for i, output in enumerate(outputs):
-                assert(server.verify_finalize(xs[i], output))
+                assert(server.verify_finalize(xs[i], output, None, None))
 
             vector = {}
             vector["Blind"] = ",".join([to_hex(group.serialize_scalar(blind)) for blind in blinds])
@@ -116,9 +117,9 @@ class Protocol(object):
 
             return vector
 
-        vectors = [create_test_vector_for_input(x) for x in self.inputs]
+        vectors = [create_test_vector_for_input(x, y) for x in self.inputs for y in self.tags]
         if self.mode == MODE_VERIFIABLE:
-            vectors.append(create_batched_test_vector_for_inputs(self.inputs))
+            vectors.append(create_batched_test_vector_for_inputs(self.inputs, self.tags))
 
         vecSuite = {}
         vecSuite["suiteName"] = self.suite.name

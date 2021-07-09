@@ -52,12 +52,12 @@ class ClientContext(Context):
     def identifier(self):
         return self.identifier
 
-    def blind(self, x):
+    def blind(self, x, tag):
         blind = ZZ(self.suite.group.random_scalar())
         P = self.suite.group.hash_to_group(x, self.group_domain_separation_tag())
         R = blind * P
         blinded_element = self.suite.group.serialize(R)
-        return blind, blinded_element
+        return blind, blinded_element, tag
 
     def unblind(self, blind, evaluated_element, blinded_element, proof):
         # Note: blinded_element and proof are unused in the base mode
@@ -67,12 +67,20 @@ class ClientContext(Context):
         unblinded_element = self.suite.group.serialize(N)
         return unblinded_element
 
-    def finalize(self, x, blind, evaluated_element, blinded_element, proof):
+    def finalize(self, x, blind, evaluated_element, blinded_element, proof, cTag, sTag):
         unblinded_element = self.unblind(blind, evaluated_element, blinded_element, proof)
         finalizeDST = _as_bytes("Finalize-") + self.context_string
-        finalize_input = I2OSP(len(x), 2) + x \
-            + I2OSP(len(unblinded_element), 2) + unblinded_element \
-            + I2OSP(len(finalizeDST), 2) + finalizeDST
+
+        if cTag is not None and sTag is not None:
+            finalize_input = I2OSP(len(x), 2) + x \
+                + I2OSP(len(sTag), 2) + sTag \
+                + I2OSP(len(cTag), 2) + cTag \
+                + I2OSP(len(unblinded_element), 2) + unblinded_element \
+                + I2OSP(len(finalizeDST), 2) + finalizeDST
+        else:
+            finalize_input = I2OSP(len(x), 2) + x \
+                + I2OSP(len(unblinded_element), 2) + unblinded_element \
+                + I2OSP(len(finalizeDST), 2) + finalizeDST
 
         return self.suite.hash(finalize_input)
 
@@ -82,21 +90,42 @@ class ServerContext(Context):
         self.skS = skS
         self.pkS = pkS
 
-    def evaluate(self, blinded_element):
+    def evaluate(self, blinded_element, cTag, sTag):
+        if cTag is not None or sTag is not None:
+            R = self.suite.group.deserialize(blinded_element)
+            metadataDST = _as_bytes("Metadata-") + self.context_string
+            metadata_input = I2OSP(len(sTag), 2) + sTag \
+                + I2OSP(len(cTag), 2) + cTag \
+                + I2OSP(len(metadataDST), 2) + metadataDST
+            tag = self.suite.group.hash_to_scalar(metadata_input, self.scalar_domain_separation_tag())
+            t = self.skS + tag
+            tag_inv = inverse_mod(tag, self.suite.group.order())
+            Z = tag_inv * R
+            evaluated_element = self.suite.group.serialize(Z)
+            return evaluated_element, None, None, sTag
+
         R = self.suite.group.deserialize(blinded_element)
         Z = self.skS * R
         evaluated_element = self.suite.group.serialize(Z)
-        return evaluated_element, None, None
+        return evaluated_element, None, None, None
 
-    def verify_finalize(self, x, expected_digest):
+    def verify_finalize(self, x, expected_digest, cTag, sTag):
         P = self.suite.group.hash_to_group(x, self.group_domain_separation_tag())
         input_element = self.suite.group.serialize(P)
-        issued_element, _, _ = self.evaluate(input_element) # Ignore the proof output
+        issued_element, _, _, _ = self.evaluate(input_element, cTag, sTag) # Ignore the proof output
 
         finalizeDST = _as_bytes("Finalize-") + self.context_string
-        finalize_input = I2OSP(len(x), 2) + x \
-            + I2OSP(len(issued_element), 2) + issued_element \
-            + I2OSP(len(finalizeDST), 2) + finalizeDST
+
+        if cTag is not None and sTag is not None:
+            finalize_input = I2OSP(len(x), 2) + x \
+                + I2OSP(len(sTag), 2) + sTag \
+                + I2OSP(len(cTag), 2) + cTag \
+                + I2OSP(len(issued_element), 2) + issued_element \
+                + I2OSP(len(finalizeDST), 2) + finalizeDST
+        else:
+            finalize_input = I2OSP(len(x), 2) + x \
+                + I2OSP(len(issued_element), 2) + issued_element \
+                + I2OSP(len(finalizeDST), 2) + finalizeDST
 
         digest = self.suite.hash(finalize_input)
 
@@ -181,12 +210,12 @@ class VerifiableClientContext(ClientContext,Verifiable):
         blinded_generator = blind * G
         return blinded_generator, blind
 
-    def blind(self, x):
+    def blind(self, x, tag):
         blinded_generator, blind = self.preprocess()
         P = self.suite.group.hash_to_group(x, self.group_domain_separation_tag())
         R = blinded_generator + P
         blinded_element = self.suite.group.serialize(R)
-        return blind, blinded_element
+        return blind, blinded_element, tag
 
     def unblind(self, blind, evaluated_element, blinded_element, proof):
         G = self.suite.group.generator()
@@ -277,12 +306,12 @@ class VerifiableServerContext(ServerContext,Verifiable):
 
         return [c, s], r
 
-    def evaluate(self, blinded_element):
+    def evaluate(self, blinded_element, cTag, sTag):
         R = self.suite.group.deserialize(blinded_element)
         Z = self.skS * R
         evaluated_element = self.suite.group.serialize(Z)
         proof, r = self.generate_proof(self.skS, self.suite.group.generator(), self.pkS, [R], [Z])
-        return evaluated_element, proof, r
+        return evaluated_element, proof, r, None
 
     def evaluate_batch(self, blinded_elements):
         Rs = []
